@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:kothayhisab/core/constants/bangla_language.dart';
+import 'package:kothayhisab/presentation/common_widgets/app_bar.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -6,15 +8,7 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
-      ),
+      appBar: CustomAppBar(BanglaLanguage.settings),
       body: const Center(
         child: Text('Settings Screen', style: TextStyle(fontSize: 20)),
       ),

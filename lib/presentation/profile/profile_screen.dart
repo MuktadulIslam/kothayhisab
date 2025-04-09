@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:kothayhisab/core/constants/bangla_language.dart';
+import 'package:kothayhisab/presentation/common_widgets/app_bar.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -6,15 +8,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
-      ),
+      appBar: CustomAppBar(BanglaLanguage.profile),
       body: const Center(
         child: Text('User Profile Screen', style: TextStyle(fontSize: 20)),
       ),

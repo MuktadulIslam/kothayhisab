@@ -42,18 +42,23 @@ class _HomeScreenState extends State<HomeScreen> {
       'color': Colors.pink,
     },
     {
-      'name': 'Settings',
+      'name': BanglaLanguage.settings,
       'icon': Icons.settings,
       'route': '/settings',
       'color': Colors.purple,
     },
     {
-      'name': 'Profile',
+      'name': BanglaLanguage.profile,
       'icon': Icons.person,
       'route': '/profile',
       'color': Colors.indigo,
     },
-    {'name': 'Help', 'icon': Icons.help, 'route': '/help', 'color': Colors.red},
+    {
+      'name': BanglaLanguage.help,
+      'icon': Icons.help,
+      'route': '/help',
+      'color': Colors.red,
+    },
   ];
 
   @override

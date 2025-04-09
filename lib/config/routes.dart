@@ -11,6 +11,8 @@ import 'package:kothayhisab/presentation/report/monthly_report.dart';
 import 'package:kothayhisab/presentation/settings/settings_screen.dart';
 import 'package:kothayhisab/presentation/profile/profile_screen.dart';
 import 'package:kothayhisab/presentation/help/help_screen.dart';
+import 'package:kothayhisab/presentation/shops/show_all_shops.dart';
+import 'package:kothayhisab/presentation/shops/add_new_shop.dart';
 
 // Define the routes for navigation
 final Map<String, WidgetBuilder> appRoutes = {
@@ -25,6 +27,8 @@ final Map<String, WidgetBuilder> appRoutes = {
   '/home': (context) => const SplashScreen(),
   '/store': (context) => const StoreScreen(),
   '/sell': (context) => const SellScreen(),
+  '/store/show_all_shops': (context) => const ShopViewScreen(),
+  '/store/add_shops': (context) => const AddNewShopScreen(),
   // '/store/show_products': (context) => const StoredProductsPage(),
   // '/store/add_products': (context) => const AddNewProdectsPage(),
 };

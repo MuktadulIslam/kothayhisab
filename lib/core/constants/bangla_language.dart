@@ -20,4 +20,9 @@ class BanglaLanguage {
   static const addShop = 'দোকান যোগ করুন';
   static const allEmployees = 'কর্মী সমূহ';
   static const addEmployee = 'কর্মী যোগ করুন';
+
+  static const settings = 'সেটিংস';
+  static const help = 'সাহায্য অনুসন্ধান';
+  static const profile = 'প্রোফাইল';
+  static const logout = 'লগ আউট';
 }
