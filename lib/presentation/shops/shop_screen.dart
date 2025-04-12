@@ -3,14 +3,14 @@ import 'package:kothayhisab/presentation/common_widgets/app_bar.dart';
 import 'package:kothayhisab/presentation/common_widgets/custom_bottom_app_bar.dart';
 import 'package:kothayhisab/presentation/common_widgets/store_card.dart';
 
-class StoreScreen extends StatelessWidget {
-  const StoreScreen({super.key});
+class ShopScreen extends StatelessWidget {
+  const ShopScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
-      appBar: CustomAppBar('মজুদ'), // "Root Store" in Bengali
+      appBar: CustomAppBar('মুরাদ ষ্টোর'), // "Root Store" in Bengali
       body: Padding(
         padding: const EdgeInsets.all(10.0),
         child: Column(
@@ -27,10 +27,7 @@ class StoreScreen extends StatelessWidget {
                 Expanded(
                   child: GestureDetector(
                     onTap: () {
-                      Navigator.pushNamed(
-                        context,
-                        '/shop-details/store/add_inventory',
-                      );
+                      Navigator.pushNamed(context, '/shop-details/store');
                     },
                     child: Container(
                       height: 100,
@@ -61,14 +58,14 @@ class StoreScreen extends StatelessWidget {
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(
-                              Icons.add_business_sharp,
+                              Icons.shopping_bag_outlined,
                               color: Color(0xFF0C5D8F),
                               size: 24,
                             ),
                           ),
                           const SizedBox(height: 8),
                           const Text(
-                            'মজুদ যোগ করুন', // "Products" in Bengali
+                            'মজুদ', // "Products" in Bengali
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 12,
@@ -87,10 +84,7 @@ class StoreScreen extends StatelessWidget {
                 Expanded(
                   child: GestureDetector(
                     onTap: () {
-                      Navigator.pushNamed(
-                        context,
-                        '/shop-details/store/see_inventory',
-                      );
+                      Navigator.pushNamed(context, '/shop-details/sales');
                     },
                     child: Container(
                       height: 100,
@@ -116,14 +110,14 @@ class StoreScreen extends StatelessWidget {
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(
-                              Icons.open_with,
+                              Icons.attach_money,
                               color: Colors.green,
                               size: 24,
                             ),
                           ),
                           const SizedBox(height: 8),
                           const Text(
-                            'মজুদ দেখুন', // "Sales" in Bengali
+                            'বিক্রয়', // "Sales" in Bengali
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 12,

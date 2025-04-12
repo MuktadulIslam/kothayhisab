@@ -3,6 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:kothayhisab/data/api/services/auth_service.dart';
 import 'package:kothayhisab/data/api/middleware/auth_middleware.dart';
 import 'package:kothayhisab/core/constants/bangla_language.dart';
+import 'package:kothayhisab/presentation/common_widgets/custom_bottom_app_bar.dart';
+
+class Shop {
+  final String id;
+  final String name;
+  final String location;
+
+  Shop({required this.id, required this.name, required this.location});
+}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,52 +23,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final AuthService _authService = AuthService();
   bool _isLoading = false;
-
-  // Define grid items with their icons, names and routes
-  final List<Map<String, dynamic>> _gridItems = [
-    {
-      'name': BanglaLanguage.store,
-      'icon': Icons.add_business_rounded,
-      'route': '/store',
-      'color': Colors.blue,
-    },
-    {
-      'name': BanglaLanguage.sell,
-      'icon': Icons.store_rounded,
-      'route': '/sell',
-      'color': Colors.green,
-    },
-    {
-      'name': BanglaLanguage.monthlyReport,
-      'icon': Icons.bar_chart,
-      'route': '/monthlyReport',
-      'color': Colors.orange,
-    },
-    {
-      'name': BanglaLanguage.myshop,
-      'icon': Icons.holiday_village_sharp,
-      'route': '/shops',
-      'color': Colors.pink,
-    },
-    {
-      'name': BanglaLanguage.settings,
-      'icon': Icons.settings,
-      'route': '/settings',
-      'color': Colors.purple,
-    },
-    {
-      'name': BanglaLanguage.profile,
-      'icon': Icons.person,
-      'route': '/profile',
-      'color': Colors.indigo,
-    },
-    {
-      'name': BanglaLanguage.help,
-      'icon': Icons.help,
-      'route': '/help',
-      'color': Colors.red,
-    },
-  ];
 
   @override
   void initState() {
@@ -93,33 +56,23 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _handleGridItemTap(int index) {
-    final route = _gridItems[index]['route'];
-
-    // Navigate to the corresponding route if it exists
-    if (route != null) {
-      Navigator.of(context).pushNamed(route);
-    } else {
-      // Fallback for items without routes
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Feature coming soon: ${_gridItems[index]['name']}'),
-        ),
-      );
-    }
-  }
+  List<Shop> shops = [
+    Shop(id: '1', name: 'Murad Store', location: 'Murad Nagar'),
+    Shop(id: '2', name: 'Central Market', location: 'Downtown Area'),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: const Color.fromARGB(255, 34, 38, 93),
         title: const Text(
           BanglaLanguage.appName,
           style: TextStyle(
             fontSize: 30,
             fontWeight: FontWeight.bold,
             letterSpacing: 0.5,
-            color: Color.fromARGB(255, 26, 30, 87),
+            color: Colors.white,
           ),
         ),
         automaticallyImplyLeading: false, // This removes the back button
@@ -139,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               )
               : IconButton(
-                icon: const Icon(Icons.exit_to_app),
+                icon: const Icon(Icons.exit_to_app, color: Colors.white),
                 onPressed: _logout,
                 tooltip: 'Logout',
               ),
@@ -147,67 +100,160 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Column(
         children: [
-          // Grid section
+          // Shop list using ListView.builder
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3, // Three columns
-                  crossAxisSpacing: 16.0,
-                  mainAxisSpacing: 16.0,
-                  childAspectRatio: 1.0,
-                ),
-                itemCount: _gridItems.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    elevation: 4.0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
-                    child: InkWell(
-                      onTap: () => _handleGridItemTap(index),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // Icon/Image
-                          Container(
-                            padding: const EdgeInsets.all(12.0),
-                            decoration: BoxDecoration(
-                              color: _gridItems[index]['color'].withOpacity(
-                                0.2,
-                              ),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              _gridItems[index]['icon'],
-                              size: 36,
-                              color: _gridItems[index]['color'],
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          // Name
-                          Text(
-                            _gridItems[index]['name'],
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                              height: 1,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 8),
-                        ],
+            child:
+                shops.isEmpty
+                    ? const Center(
+                      child: Text(
+                        'No shops available',
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: Color.fromARGB(255, 139, 133, 133),
+                        ),
                       ),
+                    )
+                    : ListView.builder(
+                      itemCount: shops.length,
+                      padding: const EdgeInsets.only(top: 8),
+                      itemBuilder: (context, index) {
+                        final shop = shops[index];
+                        return Container(
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.1),
+                                spreadRadius: 1,
+                                blurRadius: 2,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 4,
+                            ),
+                            title: Text(
+                              shop.name,
+                              style: const TextStyle(
+                                color: Color(0xFF00558D),
+                                fontWeight: FontWeight.w500,
+                                fontSize: 16,
+                              ),
+                            ),
+                            subtitle: Row(
+                              children: [
+                                const Icon(
+                                  Icons.location_on,
+                                  size: 14,
+                                  color: Colors.black54,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Location: ${shop.location}',
+                                  style: TextStyle(
+                                    color: Colors.grey[700],
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            trailing: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF00558D),
+                                shape: BoxShape.circle,
+                              ),
+                              child: IconButton(
+                                padding: EdgeInsets.zero,
+                                icon: const Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: 18,
+                                  color: Colors.white,
+                                ),
+                                onPressed: () {
+                                  Navigator.pushNamed(
+                                    context,
+                                    '/shop-details',
+                                    arguments: shop,
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  );
+          ),
+          // Add New Shop button at the bottom that redirects to another page
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Container(
+              height: 48,
+              width: 180,
+              decoration: BoxDecoration(
+                color: const Color(0xFF00558D),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: Colors.blue.shade300, width: 1),
+              ),
+              child: InkWell(
+                onTap: () {
+                  // Redirect to add shop page instead of showing dialog
+                  Navigator.pushNamed(context, '/add-shop').then((value) {
+                    // Refresh the list if a new shop was added
+                    if (value != null && value is Shop) {
+                      setState(() {
+                        shops.add(value);
+                      });
+                    }
+                  });
                 },
+                borderRadius: BorderRadius.circular(24),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Add New Shop',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Container(
+                        width: 32,
+                        height: 32,
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.add,
+                            color: Color(0xFF00558D),
+                            size: 24,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
         ],
       ),
+      bottomNavigationBar: CustomBottomAppBar(),
     );
   }
 }
