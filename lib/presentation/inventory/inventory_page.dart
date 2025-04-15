@@ -1,6 +1,9 @@
 // lib/screens/inventory_page.dart
 import 'package:flutter/material.dart';
 import 'package:kothayhisab/data/api/services/inventory_service.dart';
+import 'package:kothayhisab/presentation/common_widgets/app_bar.dart';
+import 'package:kothayhisab/presentation/common_widgets/custom_bottom_app_bar.dart';
+import 'package:kothayhisab/core/utils/currency_formatter.dart';
 
 class InventoryPage extends StatefulWidget {
   const InventoryPage({Key? key}) : super(key: key);
@@ -16,6 +19,9 @@ class _InventoryPageState extends State<InventoryPage> {
   final TextEditingController _searchController = TextEditingController();
   List<InventoryItem> filteredItems = [];
   Map<String, List<InventoryItem>> groupedItems = {};
+
+  // Control whether to use Bengali digits
+  bool _useBengaliDigits = true;
 
   final InventoryService _inventoryService = InventoryService();
 
@@ -89,8 +95,28 @@ class _InventoryPageState extends State<InventoryPage> {
       return "গতকাল";
     } else {
       // Format date in Bengali
-      return "${localDate.day}/${localDate.month}/${localDate.year}";
+      String day =
+          _useBengaliDigits
+              ? BdTakaFormatter.numberToBengaliDigits(localDate.day)
+              : localDate.day.toString();
+
+      String month =
+          _useBengaliDigits
+              ? BdTakaFormatter.numberToBengaliDigits(localDate.month)
+              : localDate.month.toString();
+
+      String year =
+          _useBengaliDigits
+              ? BdTakaFormatter.numberToBengaliDigits(localDate.year)
+              : localDate.year.toString();
+
+      return "$day/$month/$year";
     }
+  }
+
+  // Calculate sum of prices for a list of items
+  double _calculateTotalPrice(List<InventoryItem> items) {
+    return items.fold(0.0, (total, item) => total + item.price);
   }
 
   Future<void> fetchInventoryData() async {
@@ -120,18 +146,7 @@ class _InventoryPageState extends State<InventoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: const Text(
-          'মজুদ',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: const Color(0xFF01579B),
-        foregroundColor: Colors.white,
-      ),
+      appBar: CustomAppBar('মজুদ তালিকা'),
       body: Column(
         children: [
           Padding(
@@ -209,15 +224,16 @@ class _InventoryPageState extends State<InventoryPage> {
                     Padding(
                       padding: EdgeInsets.all(12.0),
                       child: Text(
-                        'মূল্য',
+                        'পরিমাণ',
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
                     Padding(
                       padding: EdgeInsets.all(12.0),
                       child: Text(
-                        'পরিমাণ',
+                        'মূল্য',
                         style: TextStyle(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.right,
                       ),
                     ),
                   ],
@@ -238,11 +254,12 @@ class _InventoryPageState extends State<InventoryPage> {
                       itemBuilder: (context, groupIndex) {
                         final dateKey = groupedItems.keys.elementAt(groupIndex);
                         final dateItems = groupedItems[dateKey]!;
+                        final totalPrice = _calculateTotalPrice(dateItems);
 
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Date header
+                            // Date header with sum of prices
                             Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 16.0,
@@ -250,12 +267,26 @@ class _InventoryPageState extends State<InventoryPage> {
                               ),
                               color: Colors.grey.shade200,
                               width: double.infinity,
-                              child: Text(
-                                dateKey,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    dateKey,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  // Sum of prices for this date
+                                  Text(
+                                    'মোট: ${dateItems.first.currency} ${BdTakaFormatter.format(totalPrice, toBengaliDigits: _useBengaliDigits)}',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
 
@@ -298,27 +329,14 @@ class _InventoryPageState extends State<InventoryPage> {
                                                     context,
                                                   ).style,
                                               children: [
-                                                TextSpan(text: item.currency),
-                                                const TextSpan(text: ' '),
-                                                TextSpan(
-                                                  text: item.price.toString(),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.all(12.0),
-                                          child: RichText(
-                                            text: TextSpan(
-                                              style:
-                                                  DefaultTextStyle.of(
-                                                    context,
-                                                  ).style,
-                                              children: [
                                                 TextSpan(
                                                   text:
-                                                      item.quantity.toString(),
+                                                      _useBengaliDigits
+                                                          ? BdTakaFormatter.numberToBengaliDigits(
+                                                            item.quantity,
+                                                          )
+                                                          : item.quantity
+                                                              .toString(),
                                                 ),
                                                 if (item
                                                     .quantityDescription
@@ -327,6 +345,29 @@ class _InventoryPageState extends State<InventoryPage> {
                                                     text:
                                                         ' ${item.quantityDescription}',
                                                   ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.all(12.0),
+                                          child: RichText(
+                                            textAlign: TextAlign.right,
+                                            text: TextSpan(
+                                              style:
+                                                  DefaultTextStyle.of(
+                                                    context,
+                                                  ).style,
+                                              children: [
+                                                TextSpan(text: item.currency),
+                                                const TextSpan(text: ' '),
+                                                TextSpan(
+                                                  text: BdTakaFormatter.format(
+                                                    item.price,
+                                                    toBengaliDigits:
+                                                        _useBengaliDigits,
+                                                  ),
+                                                ),
                                               ],
                                             ),
                                           ),
@@ -349,6 +390,7 @@ class _InventoryPageState extends State<InventoryPage> {
         backgroundColor: const Color(0xFF01579B),
         child: const Icon(Icons.refresh),
       ),
+      bottomNavigationBar: CustomBottomAppBar(),
     );
   }
 }

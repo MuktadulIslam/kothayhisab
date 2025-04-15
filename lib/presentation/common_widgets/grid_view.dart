@@ -28,7 +28,7 @@ class CustomGridView extends StatelessWidget {
         padding: const EdgeInsets.all(10.0),
         child: GridView.builder(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3, // Three columns
+            crossAxisCount: 2, // Three columns
             crossAxisSpacing: 16.0,
             mainAxisSpacing: 16.0,
             childAspectRatio: 1.0,

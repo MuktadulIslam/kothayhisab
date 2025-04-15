@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:kothayhisab/data/api/services/inventory_service.dart';
 import 'package:kothayhisab/presentation/common_widgets/app_bar.dart';
 import 'package:kothayhisab/presentation/common_widgets/custom_bottom_app_bar.dart';
+import 'package:kothayhisab/core/utils/currency_formatter.dart';
 
 class AddInventoryScreen extends StatefulWidget {
   @override
@@ -20,6 +21,9 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
   bool _hasError = false;
   String _errorMessage = '';
   bool _productsVisible = false;
+
+  // Control whether to use Bengali digits
+  bool _useBengaliDigits = true;
 
   @override
   void dispose() {
@@ -144,11 +148,39 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
     }
   }
 
+  // Calculate total price of all items
+  double _calculateTotalPrice() {
+    return _parsedItems.fold(0.0, (total, item) => total + item.price);
+  }
+
+  // Format quantity with or without description
+  String _formatQuantity(InventoryItem item) {
+    String quantity =
+        _useBengaliDigits
+            ? BdTakaFormatter.numberToBengaliDigits(item.quantity)
+            : item.quantity.toString();
+
+    if (item.quantityDescription.isNotEmpty) {
+      return '$quantity ${item.quantityDescription}';
+    }
+    return quantity;
+  }
+
   @override
   Widget build(BuildContext context) {
     // Get available height for the body content
     final viewInsets = MediaQuery.of(context).viewInsets;
     final isKeyboardOpen = viewInsets.bottom > 0;
+
+    // Calculate total price
+    final totalPrice =
+        _productsVisible && _parsedItems.isNotEmpty
+            ? _calculateTotalPrice()
+            : 0.0;
+
+    // Get currency symbol from first item or default to Taka
+    final currency =
+        _parsedItems.isNotEmpty ? _parsedItems.first.currency : '৳';
 
     return Scaffold(
       resizeToAvoidBottomInset: true, // Allow resizing when keyboard appears
@@ -236,6 +268,44 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
                           ),
                         ),
 
+                      // Total price section (if items are visible)
+                      if (_productsVisible && _parsedItems.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0,
+                            vertical: 12.0,
+                          ),
+                          child: Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.shade50,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.blue.shade200),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'মোট মূল্য:',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                Text(
+                                  '$currency ${BdTakaFormatter.format(totalPrice, toBengaliDigits: _useBengaliDigits)}',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Colors.blue.shade800,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
                       // Parsed items table
                       if (_productsVisible && _parsedItems.isNotEmpty)
                         Padding(
@@ -269,7 +339,7 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
                                     ),
                                     Expanded(
                                       child: Text(
-                                        'মূল্য',
+                                        'পরিমাণ',
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -277,10 +347,11 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
                                     ),
                                     Expanded(
                                       child: Text(
-                                        'পরিমাণ',
+                                        'মূল্য',
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                         ),
+                                        textAlign: TextAlign.right,
                                       ),
                                     ),
                                   ],
@@ -310,13 +381,12 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
                                         ),
                                       ),
                                       Expanded(
-                                        child: Text(
-                                          '${item.currency} ${item.price}',
-                                        ),
+                                        child: Text(_formatQuantity(item)),
                                       ),
                                       Expanded(
                                         child: Text(
-                                          '${item.quantity} ${item.quantityDescription}',
+                                          '${item.currency} ${BdTakaFormatter.format(item.price, toBengaliDigits: _useBengaliDigits)}',
+                                          textAlign: TextAlign.right,
                                         ),
                                       ),
                                     ],

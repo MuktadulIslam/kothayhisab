@@ -7,7 +7,7 @@ import 'package:flutter/foundation.dart';
 
 class InventoryItem {
   String name;
-  num price;
+  double price; // Changed from num to double
   String currency;
   num quantity;
   String quantityDescription;
@@ -41,9 +41,25 @@ class InventoryItem {
       return text;
     }
 
+    // Convert price to double
+    double parsePrice(dynamic value) {
+      if (value == null) return 0.0;
+      if (value is int) return value.toDouble();
+      if (value is double) return value;
+      if (value is String) {
+        try {
+          return double.parse(value);
+        } catch (e) {
+          print('Error parsing price from string: $e');
+          return 0.0;
+        }
+      }
+      return 0.0;
+    }
+
     return InventoryItem(
       name: fixEncoding(json['name'] ?? ''),
-      price: json['price'] ?? 0,
+      price: parsePrice(json['price']),
       currency: fixEncoding(json['currency'] ?? '৳'),
       quantity: json['quantity'] ?? 0,
       quantityDescription: fixEncoding(json['quantity_description'] ?? ''),
@@ -72,11 +88,27 @@ class InventoryService {
   static const String tokenKey = 'auth_token';
   static AuthService _authService = AuthService();
 
+  // Helper method to convert price to double
+  double _convertToDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is int) return value.toDouble();
+    if (value is double) return value;
+    if (value is String) {
+      try {
+        return double.parse(value);
+      } catch (e) {
+        print('Error parsing price from string: $e');
+        return 0.0;
+      }
+    }
+    return 0.0;
+  }
+
   // Helper method to convert API response item to InventoryItem
   InventoryItem _convertApiItemToInventoryItem(Map<String, dynamic> apiItem) {
     return InventoryItem(
       name: apiItem['product_name'] ?? '',
-      price: apiItem['price'] ?? 0,
+      price: _convertToDouble(apiItem['price']),
       currency: apiItem['currency'] ?? '৳',
       quantity: apiItem['quantity'] ?? 0,
       quantityDescription: apiItem['quantity_description'] ?? '',

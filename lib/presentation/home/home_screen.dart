@@ -57,15 +57,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   List<Shop> shops = [
-    Shop(id: '1', name: 'Murad Store', location: 'Murad Nagar'),
-    Shop(id: '2', name: 'Central Market', location: 'Downtown Area'),
+    Shop(id: '1', name: 'নিত্যপ্রয়োজন', location: 'গুলশান-২, ঢাকা'),
+    Shop(id: '2', name: 'অলটাইম শপ', location: '১০ নম্বর রোড, উত্তরা-১২, ঢাকা'),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 34, 38, 93),
+        backgroundColor: const Color(0xFF0C5D8F),
         title: const Text(
           BanglaLanguage.appName,
           style: TextStyle(
@@ -156,11 +156,25 @@ class _HomeScreenState extends State<HomeScreen> {
                                   color: Colors.black54,
                                 ),
                                 const SizedBox(width: 4),
-                                Text(
-                                  'Location: ${shop.location}',
-                                  style: TextStyle(
-                                    color: Colors.grey[700],
-                                    fontSize: 12,
+                                Text.rich(
+                                  TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: 'লোকেশান: ',
+                                        style: TextStyle(
+                                          color: Colors.grey[700],
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: '${shop.location}',
+                                        style: TextStyle(
+                                          color: Colors.grey[700],
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
@@ -198,7 +212,7 @@ class _HomeScreenState extends State<HomeScreen> {
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: Container(
               height: 48,
-              width: 180,
+              width: 200,
               decoration: BoxDecoration(
                 color: const Color(0xFF00558D),
                 borderRadius: BorderRadius.circular(24),
@@ -223,7 +237,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
-                        'Add New Shop',
+                        'দোকান যোগ করুন',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 16,
