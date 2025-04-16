@@ -26,10 +26,22 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
   bool _useBengaliDigits = true;
 
   @override
+  void initState() {
+    super.initState();
+    _textFocusNode.addListener(_onFocusChange);
+  }
+
+  @override
   void dispose() {
     _textController.dispose();
+    _textFocusNode.removeListener(_onFocusChange);
     _textFocusNode.dispose();
     super.dispose();
+  }
+
+  void _onFocusChange() {
+    // Trigger rebuild when focus changes
+    setState(() {});
   }
 
   void _handleVoiceButtonPressed() {
@@ -49,17 +61,45 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
     });
   }
 
-  void _resetState() {
+  void _handleCancelButtonPress() {
+    // Case 1: If input field is not empty, clear it
+    if (_textController.text.trim().isNotEmpty) {
+      setState(() {
+        _textController.clear();
+        _hasError = false;
+        _errorMessage = '';
+      });
+    }
+    // Case 2: If table data exists, clear table
+    else if (_parsedItems.isNotEmpty) {
+      setState(() {
+        _parsedItems = [];
+        _productsVisible = false;
+        _hasError = false;
+        _errorMessage = '';
+      });
+    }
+    // Case 3: If both input and table are empty, go back
+    else {
+      Navigator.of(context).pop();
+    }
+  }
+
+  void _removeItemAtIndex(int index) {
     setState(() {
-      _textController.clear();
-      _parsedItems = [];
-      _productsVisible = false;
-      _hasError = false;
-      _errorMessage = '';
+      _parsedItems.removeAt(index);
+
+      // If all items are removed, hide the products section
+      if (_parsedItems.isEmpty) {
+        _productsVisible = false;
+      }
     });
   }
 
   Future<void> _parseInventoryText() async {
+    // Remove focus from text field when button is clicked to dismiss keyboard
+    FocusScope.of(context).unfocus();
+
     final text = _textController.text.trim();
 
     if (text.isEmpty) {
@@ -80,9 +120,12 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
       final items = await _inventoryService.parseInventoryText(text);
 
       setState(() {
-        _parsedItems = items;
+        // Add new items to existing items list instead of replacing
+        _parsedItems.addAll(items);
         _isLoading = false;
         _productsVisible = true;
+        // Clear input field after successful parsing
+        _textController.clear();
       });
     } catch (e) {
       setState(() {
@@ -112,6 +155,14 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
   }
 
   Future<void> _confirmInventory() async {
+    if (_parsedItems.isEmpty) {
+      setState(() {
+        _hasError = true;
+        _errorMessage = 'কোন পণ্য যোগ করা হয়নি';
+      });
+      return;
+    }
+
     setState(() {
       _isSaving = true;
       _hasError = false;
@@ -129,7 +180,14 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
           context,
         ).showSnackBar(SnackBar(content: Text('মজুদ সফলভাবে সংরক্ষিত হয়েছে')));
 
-        _resetState();
+        // Reset the state but don't navigate back
+        setState(() {
+          _textController.clear();
+          _parsedItems = [];
+          _productsVisible = false;
+          _hasError = false;
+          _errorMessage = '';
+        });
       }
     } catch (e) {
       setState(() {
@@ -204,7 +262,6 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
                   child: TextField(
                     controller: _textController,
                     focusNode: _textFocusNode,
-                    enabled: !_productsVisible,
                     decoration: InputDecoration(
                       hintText: 'এখানে লিখুন',
                       contentPadding: EdgeInsets.all(16),
@@ -213,7 +270,7 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
                     maxLines: 4,
                     textInputAction: TextInputAction.done,
                     onSubmitted: (value) {
-                      if (!_productsVisible) {
+                      if (value.trim().isNotEmpty) {
                         _parseInventoryText();
                       }
                     },
@@ -237,10 +294,7 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
                         ),
                         child: IconButton(
                           icon: Icon(Icons.mic, color: Colors.white, size: 28),
-                          onPressed:
-                              _productsVisible
-                                  ? null
-                                  : _handleVoiceButtonPressed,
+                          onPressed: _handleVoiceButtonPressed,
                         ),
                       ),
                       SizedBox(height: 16),
@@ -354,6 +408,9 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
                                         textAlign: TextAlign.right,
                                       ),
                                     ),
+                                    SizedBox(
+                                      width: 40,
+                                    ), // Space for delete button
                                   ],
                                 ),
                               ),
@@ -388,6 +445,18 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
                                           '${item.currency} ${BdTakaFormatter.format(item.price, toBengaliDigits: _useBengaliDigits)}',
                                           textAlign: TextAlign.right,
                                         ),
+                                      ),
+                                      // Delete button
+                                      IconButton(
+                                        icon: Icon(
+                                          Icons.close,
+                                          color: Colors.red.shade400,
+                                          size: 20,
+                                        ),
+                                        padding: EdgeInsets.zero,
+                                        constraints: BoxConstraints(),
+                                        onPressed:
+                                            () => _removeItemAtIndex(index),
                                       ),
                                     ],
                                   ),
@@ -424,7 +493,10 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
                           ),
                           padding: EdgeInsets.symmetric(vertical: 12),
                         ),
-                        onPressed: _isLoading || _isSaving ? null : _resetState,
+                        onPressed:
+                            _isLoading || _isSaving
+                                ? null
+                                : _handleCancelButtonPress,
                         child: Text('বাতিল'),
                       ),
                     ),
@@ -442,7 +514,8 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
                         onPressed:
                             _isLoading || _isSaving
                                 ? null
-                                : (_productsVisible
+                                : (_textController.text.trim().isEmpty &&
+                                        _productsVisible
                                     ? _confirmInventory
                                     : _parseInventoryText),
                         child:
@@ -456,7 +529,10 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
                                   ),
                                 )
                                 : Text(
-                                  _productsVisible ? 'মজুদ করুন' : 'পণ্য দেখুন',
+                                  _textController.text.trim().isNotEmpty ||
+                                          _textFocusNode.hasFocus
+                                      ? 'পণ্য দেখুন'
+                                      : 'মজুদ করুন',
                                 ),
                       ),
                     ),

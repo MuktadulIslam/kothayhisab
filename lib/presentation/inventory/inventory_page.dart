@@ -42,14 +42,19 @@ class _InventoryPageState extends State<InventoryPage> {
   }
 
   void filterItems(String query) {
+    // Trim whitespace from both ends of the query
+    String trimmedQuery = query.trim();
+
     List<InventoryItem> items;
-    if (query.isEmpty) {
+    if (trimmedQuery.isEmpty) {
       items = List.from(inventoryItems);
     } else {
       items =
           inventoryItems
               .where(
-                (item) => item.name.toLowerCase().contains(query.toLowerCase()),
+                (item) => item.name.toLowerCase().contains(
+                  trimmedQuery.toLowerCase(),
+                ),
               )
               .toList();
     }

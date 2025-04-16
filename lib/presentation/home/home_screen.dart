@@ -57,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   List<Shop> shops = [
-    Shop(id: '1', name: 'নিত্যপ্রয়োজন', location: 'গুলশান-২, ঢাকা'),
+    Shop(id: '1', name: 'নিত্যপ্রয়োজন', location: 'গুলশান-২, ঢাকা'),
     Shop(id: '2', name: 'অলটাইম শপ', location: '১০ নম্বর রোড, উত্তরা-১২, ঢাকা'),
   ];
 
@@ -118,88 +118,97 @@ class _HomeScreenState extends State<HomeScreen> {
                       padding: const EdgeInsets.only(top: 8),
                       itemBuilder: (context, index) {
                         final shop = shops[index];
-                        return Container(
-                          margin: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.1),
-                                spreadRadius: 1,
-                                blurRadius: 2,
-                                offset: const Offset(0, 1),
-                              ),
-                            ],
-                          ),
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.symmetric(
+                        return InkWell(
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              '/shop-details',
+                              arguments: shop,
+                            );
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(
                               horizontal: 16,
-                              vertical: 4,
+                              vertical: 6,
                             ),
-                            title: Text(
-                              shop.name,
-                              style: const TextStyle(
-                                color: Color(0xFF00558D),
-                                fontWeight: FontWeight.w500,
-                                fontSize: 16,
-                              ),
-                            ),
-                            subtitle: Row(
-                              children: [
-                                const Icon(
-                                  Icons.location_on,
-                                  size: 14,
-                                  color: Colors.black54,
-                                ),
-                                const SizedBox(width: 4),
-                                Text.rich(
-                                  TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text: 'লোকেশান: ',
-                                        style: TextStyle(
-                                          color: Colors.grey[700],
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      TextSpan(
-                                        text: '${shop.location}',
-                                        style: TextStyle(
-                                          color: Colors.grey[700],
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(8),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.1),
+                                  spreadRadius: 1,
+                                  blurRadius: 2,
+                                  offset: const Offset(0, 1),
                                 ),
                               ],
                             ),
-                            trailing: Container(
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF00558D),
-                                shape: BoxShape.circle,
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 4,
                               ),
-                              child: IconButton(
-                                padding: EdgeInsets.zero,
-                                icon: const Icon(
-                                  Icons.arrow_forward_ios,
-                                  size: 18,
-                                  color: Colors.white,
+                              title: Text(
+                                shop.name,
+                                style: const TextStyle(
+                                  color: Color(0xFF00558D),
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 16,
                                 ),
-                                onPressed: () {
-                                  Navigator.pushNamed(
-                                    context,
-                                    '/shop-details',
-                                    arguments: shop,
-                                  );
-                                },
+                              ),
+                              subtitle: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.location_on,
+                                    size: 14,
+                                    color: Colors.black54,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text.rich(
+                                    TextSpan(
+                                      children: [
+                                        TextSpan(
+                                          text: 'লোকেশান: ',
+                                          style: TextStyle(
+                                            color: Colors.grey[700],
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        TextSpan(
+                                          text: '${shop.location}',
+                                          style: TextStyle(
+                                            color: Colors.grey[700],
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              trailing: Container(
+                                width: 32,
+                                height: 32,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFF00558D),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: IconButton(
+                                  padding: EdgeInsets.zero,
+                                  icon: const Icon(
+                                    Icons.arrow_forward_ios,
+                                    size: 18,
+                                    color: Colors.white,
+                                  ),
+                                  onPressed: () {
+                                    Navigator.pushNamed(
+                                      context,
+                                      '/shop-details',
+                                      arguments: shop,
+                                    );
+                                  },
+                                ),
                               ),
                             ),
                           ),

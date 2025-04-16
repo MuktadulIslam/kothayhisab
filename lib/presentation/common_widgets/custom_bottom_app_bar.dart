@@ -6,25 +6,33 @@ class CustomBottomAppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BottomAppBar(
-      height: 40,
+      height: 56, // Standard height for bottom navigation
       color: const Color.fromARGB(255, 215, 231, 246),
-      child: Row(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.home, size: 30),
-            onPressed: () {
-              Navigator.pushReplacementNamed(context, '/');
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.table_rows_rounded, size: 30),
-            onPressed: () {
-              Navigator.pushNamed(context, '/profile');
-            },
-          ),
-        ],
+      child: SafeArea(
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            Expanded(
+              child: InkWell(
+                onTap: () {
+                  Navigator.pushReplacementNamed(context, '/');
+                },
+                child: const Center(child: Icon(Icons.home, size: 28)),
+              ),
+            ),
+            Expanded(
+              child: InkWell(
+                onTap: () {
+                  Navigator.pushNamed(context, '/profile');
+                },
+                child: const Center(
+                  child: Icon(Icons.table_rows_rounded, size: 28),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
