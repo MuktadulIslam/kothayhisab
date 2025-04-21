@@ -48,7 +48,7 @@ class SalesService {
       }
 
       final response = await http.get(
-        Uri.parse('${App.backendUrl}/sales'),
+        Uri.parse('${App.backendUrl}/sales?shop_id=1'),
         headers: {'Authorization': token, 'Accept-Charset': 'utf-8'},
       );
 
@@ -174,12 +174,14 @@ class SalesService {
       }
 
       final payload = {
-        'products': items.map((item) => item.toJson()).toList(),
+        'sales': items.map((item) => item.toJson()).toList(),
         'raw_text': rawText,
       };
 
+      print('Request Sales payload: ${jsonEncode(payload)}');
+
       final response = await http.post(
-        Uri.parse('${App.backendUrl}/sales/confirm'),
+        Uri.parse('${App.backendUrl}/sales/confirm?shop_id=1'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token,

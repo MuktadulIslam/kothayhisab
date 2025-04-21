@@ -243,7 +243,7 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
 
     return Scaffold(
       resizeToAvoidBottomInset: true, // Allow resizing when keyboard appears
-      appBar: CustomAppBar('মজুদ যোগ করুন'),
+      appBar: CustomAppBar('মজুদ করুন'),
       body: SafeArea(
         child: GestureDetector(
           // Add GestureDetector to dismiss keyboard when tapping outside input

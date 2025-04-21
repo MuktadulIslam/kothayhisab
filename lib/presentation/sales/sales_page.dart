@@ -7,7 +7,7 @@ import 'package:kothayhisab/core/utils/currency_formatter.dart';
 import 'package:kothayhisab/data/models/sales_model.dart';
 
 class SalesPage extends StatefulWidget {
-  const SalesPage({Key? key}) : super(key: key);
+  const SalesPage({super.key});
 
   @override
   State<SalesPage> createState() => _SalesPageState();
@@ -69,7 +69,6 @@ class _SalesPageState extends State<SalesPage> {
   // Group items by date (formatted as a string)
   Map<String, List<SalesItem>> _groupItemsByDate(List<SalesItem> items) {
     Map<String, List<SalesItem>> result = {};
-
     for (var item in items) {
       String dateKey = _formatDate(item.entryDate);
 

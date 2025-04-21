@@ -12,6 +12,7 @@ import 'package:kothayhisab/presentation/profile/profile_screen.dart';
 import 'package:kothayhisab/presentation/profile/settings_screen.dart';
 import 'package:kothayhisab/presentation/sales/add_sales_screen.dart';
 import 'package:kothayhisab/presentation/sales/sales_page.dart';
+import 'package:kothayhisab/presentation/shops/add_new_shop.dart';
 
 import 'package:kothayhisab/presentation/shops/shop_screen.dart';
 import 'package:kothayhisab/presentation/inventory/inventory_page.dart';
@@ -28,6 +29,8 @@ final Map<String, WidgetBuilder> appRoutes = {
   AppRoutes.editProfilePage: (context) => const EditProfileScreen(),
   AppRoutes.profileSettingsPage: (context) => const ProfileSettingsScreen(),
   AppRoutes.helpPage: (context) => const HelpScreen(),
+
+  AppRoutes.addShopPage: (context) => const ShopCreationScreen(),
 
   '/shop-details': (context) => const ShopScreen(),
 

@@ -23,7 +23,7 @@ class AppRoutes {
   static const String forgotPasswordPage = '/forgot-password';
 
   static const String shopDetailsPage = '/shop-details/:id';
-  static const String addShopPage = '/add_shop';
+  static const String addShopPage = '/add-shop';
 
   static const String addEmployeePage = '/shop-details/:id/add_employee';
   static const String deleteEmployeePage = '/shop-details/:id/see_employee';

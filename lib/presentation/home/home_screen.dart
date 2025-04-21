@@ -230,7 +230,9 @@ class _HomeScreenState extends State<HomeScreen> {
               child: InkWell(
                 onTap: () {
                   // Redirect to add shop page instead of showing dialog
-                  Navigator.pushNamed(context, '/add-shop').then((value) {
+                  Navigator.pushNamed(context, AppRoutes.addShopPage).then((
+                    value,
+                  ) {
                     // Refresh the list if a new shop was added
                     if (value != null && value is Shop) {
                       setState(() {
