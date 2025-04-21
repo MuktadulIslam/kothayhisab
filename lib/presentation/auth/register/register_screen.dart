@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:kothayhisab/data/api/services/auth_service.dart';
 import 'package:kothayhisab/data/api/middleware/auth_middleware.dart';
+import 'package:kothayhisab/core/constants/app_routes.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -17,7 +18,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _mobileNumberController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  final AuthService _authService = AuthService();
 
   bool _isLoading = false;
   String _errorMessage = '';
@@ -29,13 +29,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       AuthMiddleware.checkAlreadyLoggedIn(context);
     });
+
+    // Add listeners to clear error message when input changes
+    _nameController.addListener(_clearErrorOnChange);
+    _mobileNumberController.addListener(_clearErrorOnChange);
+    _passwordController.addListener(_clearErrorOnChange);
+    _confirmPasswordController.addListener(_clearErrorOnChange);
+  }
+
+  // Function to clear error message when user types in any field
+  void _clearErrorOnChange() {
+    if (_errorMessage.isNotEmpty) {
+      setState(() {
+        _errorMessage = '';
+      });
+    }
   }
 
   Future<void> _register() async {
     if (_formKey.currentState!.validate()) {
       if (_passwordController.text != _confirmPasswordController.text) {
         setState(() {
-          _errorMessage = 'Passwords do not match';
+          _errorMessage = 'পাসওয়ার্ড মিলছে না।';
         });
         return;
       }
@@ -45,7 +60,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _errorMessage = '';
       });
 
-      final response = await _authService.register(
+      final response = await AuthService.register(
         _mobileNumberController.text,
         _passwordController.text,
         _nameController.text,
@@ -55,30 +70,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _isLoading = false;
       });
 
-      // Fixed the null success check
-      if (response['success'] == true) {
-        // Navigate to home on successful registration
+      if (response['status_code'] == 201) {
         if (mounted) {
-          Navigator.of(context).pushReplacementNamed('/home');
+          Navigator.of(context).pushReplacementNamed(AppRoutes.homePage);
+        } else {
+          Navigator.of(context).pushReplacementNamed(AppRoutes.loginPage);
         }
+      } else if (response['status_code'] == 409) {
+        setState(() {
+          _errorMessage =
+              'এই নাম্বারের ব্যবহারকারী ইতোমধ্যেই রয়েছে। অন্য কোন নম্বর ব্যবহার করুন।';
+        });
       } else {
         setState(() {
-          // Handle different error response formats
-          if (response['message'] != null) {
-            _errorMessage = response['message'];
-          } else if (response['detail'] != null &&
-              response['detail'] is List &&
-              (response['detail'] as List).isNotEmpty) {
-            // Extract error message from the detail field
-            var detail = response['detail'][0];
-            if (detail is Map && detail.containsKey('msg')) {
-              _errorMessage = detail['msg'];
-            } else {
-              _errorMessage = 'Validation error. Please check your inputs.';
-            }
-          } else {
-            _errorMessage = 'Registration failed. Please try again.';
-          }
+          _errorMessage = 'একটি অপ্রত্যাশিত ত্রুটি ঘটেছে!';
         });
       }
     }
@@ -156,7 +161,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       // Add validation for exactly 11 digits
                       if (value.length != 11 ||
                           !RegExp(r'^\d{11}$').hasMatch(value)) {
-                        return 'Mobile number must be exactly 11 digits';
+                        return "মোবাইল নম্বর অবশ্যই ঠিক ১১ সংখ্যার হতে হবে";
                       }
                       return null;
                     },
@@ -177,7 +182,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         return 'Please enter a password';
                       }
                       if (value.length < 3) {
-                        return 'Password must be at least 3 characters';
+                        return "পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে।";
                       }
                       return null;
                     },
@@ -198,7 +203,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         return 'Please confirm your password';
                       }
                       if (value != _passwordController.text) {
-                        return 'Passwords do not match';
+                        return 'পাসওয়ার্ড মিলছে না।';
                       }
                       return null;
                     },
@@ -241,7 +246,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       GestureDetector(
                         onTap: () {
-                          Navigator.of(context).pushReplacementNamed('/login');
+                          Navigator.of(
+                            context,
+                          ).pushReplacementNamed(AppRoutes.loginPage);
                         },
                         child: const Text(
                           'Login',
@@ -266,6 +273,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   void dispose() {
+    // Remove listeners before disposing controllers
+    _nameController.removeListener(_clearErrorOnChange);
+    _mobileNumberController.removeListener(_clearErrorOnChange);
+    _passwordController.removeListener(_clearErrorOnChange);
+    _confirmPasswordController.removeListener(_clearErrorOnChange);
+
+    // Dispose of controllers
     _nameController.dispose();
     _mobileNumberController.dispose();
     _passwordController.dispose();

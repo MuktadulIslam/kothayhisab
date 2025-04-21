@@ -13,7 +13,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final AuthService _authService = AuthService();
   bool _isLoading = false;
 
   // Define grid items with their icons, names and routes
@@ -76,7 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _isLoading = true;
     });
 
-    final response = await _authService.logout();
+    final response = await AuthService.logout();
 
     setState(() {
       _isLoading = false;

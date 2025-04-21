@@ -1,11 +1,10 @@
-// lib/services/inventory_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:kothayhisab/data/api/services/auth_service.dart';
-import 'package:kothayhisab/data/models/inventory_model.dart';
+import 'package:kothayhisab/data/models/sales_model.dart';
 import 'package:kothayhisab/config/app_config.dart';
 
-class InventoryService {
+class SalesService {
   // Helper method to convert price to double
   double _convertToDouble(dynamic value) {
     if (value == null) return 0.0;
@@ -22,9 +21,9 @@ class InventoryService {
     return 0.0;
   }
 
-  // Helper method to convert API response item to InventoryItem
-  InventoryItem _convertApiItemToInventoryItem(Map<String, dynamic> apiItem) {
-    return InventoryItem(
+  // Helper method to convert API response item to SalesItem
+  SalesItem _convertApiItemToSalesItem(Map<String, dynamic> apiItem) {
+    return SalesItem(
       name: apiItem['product_name'] ?? '',
       price: _convertToDouble(apiItem['price']),
       currency: apiItem['currency'] ?? '৳',
@@ -38,8 +37,8 @@ class InventoryService {
     );
   }
 
-  // Get all inventory items
-  Future<List<InventoryItem>> getInventoryItems() async {
+  // Get all sales items
+  Future<List<SalesItem>> getSalesItems() async {
     try {
       // Get token from auth service
       final token = await AuthService.getToken();
@@ -49,22 +48,22 @@ class InventoryService {
       }
 
       final response = await http.get(
-        Uri.parse('${App.backendUrl}/inventory'),
+        Uri.parse('${App.backendUrl}/sales'),
         headers: {'Authorization': token, 'Accept-Charset': 'utf-8'},
       );
 
       // Proper encoding handling for response body
       final String responseBody = utf8.decode(response.bodyBytes);
-      print('Inventory fetch status code: ${response.statusCode}');
-      print('Inventory fetch response body (decoded): $responseBody');
+      print('Sales fetch status code: ${response.statusCode}');
+      print('Sales fetch response body (decoded): $responseBody');
 
       if (response.statusCode == 200) {
         try {
           final List<dynamic> responseData = jsonDecode(responseBody);
-          // Directly map the list to InventoryItem objects
-          List<InventoryItem> items =
+          // Directly map the list to SalesItem objects
+          List<SalesItem> items =
               responseData
-                  .map((item) => _convertApiItemToInventoryItem(item))
+                  .map((item) => _convertApiItemToSalesItem(item))
                   .toList();
 
           // Sort items by entry date (newest first)
@@ -72,8 +71,8 @@ class InventoryService {
 
           return items;
         } catch (e) {
-          print('Error parsing JSON response: $e');
-          throw Exception('Error parsing response: $e');
+          print('Error parsing JSON response in sales: $e');
+          throw Exception('Error parsing response in sales: $e');
         }
       } else if (response.statusCode == 401 || response.statusCode == 403) {
         throw Exception('Authentication error. Please log in again.');
@@ -83,22 +82,22 @@ class InventoryService {
           final errorMessage =
               errorData['detail'] ??
               errorData['message'] ??
-              'Failed to fetch inventory';
+              'Failed to fetch sales';
           throw Exception(errorMessage);
         } catch (_) {
           throw Exception(
-            'Failed to fetch inventory. Status: ${response.statusCode}',
+            'Failed to fetch sales. Status: ${response.statusCode}',
           );
         }
       }
     } catch (e) {
-      print('Error fetching inventory: $e');
-      throw Exception('Error fetching inventory: $e');
+      print('Error fetching sales: $e');
+      throw Exception('Error fetching sales: $e');
     }
   }
 
   // Parse inventory text
-  Future<List<InventoryItem>> parseInventoryText(String text) async {
+  Future<List<SalesItem>> parseSalesText(String text) async {
     try {
       // Get token from shared preferences
       final token = await AuthService.getToken();
@@ -108,7 +107,7 @@ class InventoryService {
       }
 
       final response = await http.post(
-        Uri.parse('${App.backendUrl}/inventory/parse'),
+        Uri.parse('${App.backendUrl}/sales/parse'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token,
@@ -121,15 +120,15 @@ class InventoryService {
 
       // Proper encoding handling for response body
       final String responseBody = utf8.decode(response.bodyBytes);
-      print('Response body (decoded): $responseBody');
+      print('Response body in sales (decoded): $responseBody');
 
       if (response.statusCode == 200) {
         try {
           final List<dynamic> data = jsonDecode(responseBody);
-          return data.map((item) => InventoryItem.fromJson(item)).toList();
+          return data.map((item) => SalesItem.fromJson(item)).toList();
         } catch (e) {
-          print('Error parsing JSON response: $e');
-          throw Exception('Error parsing response: $e');
+          print('Error parsing JSON response in sales: $e');
+          throw Exception('Error parsing response in sales: $e');
         }
       } else if (response.statusCode == 400) {
         try {
@@ -139,10 +138,10 @@ class InventoryService {
               errorData['message'] ??
               'Invalid input format';
           throw Exception(
-            'Server could not parse input in inventory: $errorMessage',
+            'Server could not parse input in sales: $errorMessage',
           );
         } catch (_) {
-          throw Exception('Server could not parse the inventory text');
+          throw Exception('Server could not parse the sales text');
         }
       } else if (response.statusCode == 401 || response.statusCode == 403) {
         throw Exception('Authentication error. Please log in again.');
@@ -152,7 +151,7 @@ class InventoryService {
         );
       }
     } catch (e) {
-      print('Error parsing inventory text: $e');
+      print('Error parsing sales text: $e');
       String errorMessage = e.toString();
       if (errorMessage.contains(
         'type \'double\' is not a subtype of type \'int\'',
@@ -165,10 +164,7 @@ class InventoryService {
   }
 
   // Confirm and save inventory items
-  Future<bool> confirmInventory(
-    List<InventoryItem> items,
-    String rawText,
-  ) async {
+  Future<bool> confirmSales(List<SalesItem> items, String rawText) async {
     try {
       // Get token from shared preferences
       final token = await AuthService.getToken();
@@ -183,7 +179,7 @@ class InventoryService {
       };
 
       final response = await http.post(
-        Uri.parse('${App.backendUrl}/inventory/confirm'),
+        Uri.parse('${App.backendUrl}/sales/confirm'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token,
@@ -207,17 +203,17 @@ class InventoryService {
           final errorMessage =
               errorData['detail'] ??
               errorData['message'] ??
-              'Failed to save inventory';
+              'Failed to save sales';
           throw Exception(errorMessage);
         } catch (_) {
           throw Exception(
-            'Failed to save inventory. Status: ${response.statusCode}',
+            'Failed to save sales. Status: ${response.statusCode}',
           );
         }
       }
     } catch (e) {
-      print('Error confirming inventory: $e');
-      throw Exception('Error saving inventory: $e');
+      print('Error confirming sales: $e');
+      throw Exception('Error saving sales: $e');
     }
   }
 }

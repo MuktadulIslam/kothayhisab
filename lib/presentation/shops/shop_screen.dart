@@ -27,7 +27,7 @@ class ShopScreen extends StatelessWidget {
     // List of menu items with title, route path, and icon
     final List<MenuItem> menuItems = [
       MenuItem(
-        title: 'মজুদ যোগ করুন', // "Products" in Bengali
+        title: 'মজুদ করুন', // "Products" in Bengali
         routePath: '/shop-details/store/add_inventory',
         icon: Icons.add_business_sharp,
         backgroundColor: const Color.fromARGB(
@@ -46,8 +46,8 @@ class ShopScreen extends StatelessWidget {
         iconColor: Colors.green,
       ),
       MenuItem(
-        title: 'বিক্রয় যোগ করুন', // "Products" in Bengali
-        routePath: '/shop-details/store/add_inventory',
+        title: 'বিক্রয় করুন', // "Products" in Bengali
+        routePath: '/shop-details/store/add_sales',
         icon: Icons.add_business_sharp,
         backgroundColor: const Color.fromARGB(
           255,
@@ -59,7 +59,7 @@ class ShopScreen extends StatelessWidget {
       ),
       MenuItem(
         title: 'বিক্রয় দেখুন', // "Sales" in Bengali
-        routePath: '/shop-details/store/see_inventory',
+        routePath: '/shop-details/store/see_sales',
         icon: Icons.open_with,
         backgroundColor: const Color(0xFFE6F9E6),
         iconColor: Colors.green,
@@ -69,7 +69,7 @@ class ShopScreen extends StatelessWidget {
         title: 'বাকির হিসাব', // "Accounts" in Bengali
         routePath: '/shop-details/store/see_inventory',
         icon: Icons.account_balance_wallet_outlined,
-        backgroundColor: const Color(0xFFE8EAF6),
+        backgroundColor: const Color.fromARGB(255, 217, 219, 227),
         iconColor: Colors.indigo,
       ),
       MenuItem(

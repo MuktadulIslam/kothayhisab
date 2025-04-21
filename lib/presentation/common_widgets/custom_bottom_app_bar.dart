@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kothayhisab/core/constants/app_routes.dart';
 
 class CustomBottomAppBar extends StatelessWidget {
   const CustomBottomAppBar({super.key});
@@ -16,7 +17,9 @@ class CustomBottomAppBar extends StatelessWidget {
             Expanded(
               child: InkWell(
                 onTap: () {
-                  Navigator.pushReplacementNamed(context, '/');
+                  Navigator.of(
+                    context,
+                  ).pushReplacementNamed(AppRoutes.homePage);
                 },
                 child: const Center(child: Icon(Icons.home, size: 28)),
               ),
@@ -24,7 +27,7 @@ class CustomBottomAppBar extends StatelessWidget {
             Expanded(
               child: InkWell(
                 onTap: () {
-                  Navigator.pushNamed(context, '/profile');
+                  Navigator.pushNamed(context, AppRoutes.profilePage);
                 },
                 child: const Center(
                   child: Icon(Icons.table_rows_rounded, size: 28),

@@ -1,9 +1,10 @@
 // lib/screens/home_screen.dart
 import 'package:flutter/material.dart';
+import 'package:kothayhisab/core/constants/app_routes.dart';
 import 'package:kothayhisab/data/api/services/auth_service.dart';
 import 'package:kothayhisab/data/api/middleware/auth_middleware.dart';
-import 'package:kothayhisab/core/constants/bangla_language.dart';
 import 'package:kothayhisab/presentation/common_widgets/custom_bottom_app_bar.dart';
+import 'package:kothayhisab/config/app_config.dart';
 
 class Shop {
   final String id;
@@ -21,7 +22,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final AuthService _authService = AuthService();
   bool _isLoading = false;
 
   @override
@@ -38,7 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _isLoading = true;
     });
 
-    final response = await _authService.logout();
+    final response = await AuthService.logout();
 
     setState(() {
       _isLoading = false;
@@ -47,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (response['success']) {
       // Navigate to login screen on successful logout
       if (mounted) {
-        Navigator.of(context).pushReplacementNamed('/login');
+        Navigator.of(context).pushReplacementNamed(AppRoutes.loginPage);
       }
     } else {
       setState(() {
@@ -67,7 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF0C5D8F),
         title: const Text(
-          BanglaLanguage.appName,
+          App.appName,
           style: TextStyle(
             fontSize: 30,
             fontWeight: FontWeight.bold,
@@ -246,7 +246,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
-                        'দোকান যোগ করুন',
+                        'দোকান যোগ করুন ',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 16,

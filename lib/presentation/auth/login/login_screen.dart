@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kothayhisab/data/api/services/auth_service.dart';
 import 'package:kothayhisab/data/api/middleware/auth_middleware.dart';
+import 'package:kothayhisab/core/constants/app_routes.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -13,7 +14,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _mobileNumberController = TextEditingController();
   final _passwordController = TextEditingController();
-  final AuthService _authService = AuthService();
 
   bool _isLoading = false;
   String _errorMessage = '';
@@ -25,6 +25,19 @@ class _LoginScreenState extends State<LoginScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       AuthMiddleware.checkAlreadyLoggedIn(context);
     });
+
+    // Add listeners to clear error message when input changes
+    _mobileNumberController.addListener(_clearErrorOnChange);
+    _passwordController.addListener(_clearErrorOnChange);
+  }
+
+  // Function to clear error message when user types in any field
+  void _clearErrorOnChange() {
+    if (_errorMessage.isNotEmpty) {
+      setState(() {
+        _errorMessage = '';
+      });
+    }
   }
 
   Future<void> _login() async {
@@ -34,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
         _errorMessage = '';
       });
 
-      final response = await _authService.login(
+      final response = await AuthService.login(
         _mobileNumberController.text,
         _passwordController.text,
       );
@@ -43,14 +56,21 @@ class _LoginScreenState extends State<LoginScreen> {
         _isLoading = false;
       });
 
-      if (response['success']) {
+      if (response['status_code'] == 200) {
         // Navigate to home on successful login
         if (mounted) {
-          Navigator.of(context).pushReplacementNamed('/home');
+          Navigator.of(context).pushReplacementNamed(AppRoutes.homePage);
+        } else {
+          _errorMessage =
+              'অ্যাপে একটি অপ্রত্যাশিত ত্রুটি ঘটেছে। দয়া করে আবার লগইন করুন।';
         }
+      } else if (response['status_code'] == 401) {
+        setState(() {
+          _errorMessage = 'ফোন নম্বর অথবা পাসওয়ার্ড সঠিক নয়';
+        });
       } else {
         setState(() {
-          _errorMessage = response['message'];
+          _errorMessage = 'একটি অপ্রত্যাশিত ত্রুটি ঘটেছে';
         });
       }
     }
@@ -112,7 +132,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 20),
 
                   // Password Field
-                  const SizedBox(height: 16),
                   TextFormField(
                     controller: _passwordController,
                     obscureText: true,
@@ -141,7 +160,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 24),
 
                   // Login Button
-                  const SizedBox(height: 24),
                   ElevatedButton(
                     onPressed: _isLoading ? null : _login,
                     style: ElevatedButton.styleFrom(
@@ -167,7 +185,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       GestureDetector(
                         onTap: () {
-                          Navigator.of(context).pushNamed('/register');
+                          Navigator.of(
+                            context,
+                          ).pushNamed(AppRoutes.registerPage);
                         },
                         child: const Text(
                           'Register',
@@ -191,6 +211,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
+    // Remove listeners before disposing controllers
+    _mobileNumberController.removeListener(_clearErrorOnChange);
+    _passwordController.removeListener(_clearErrorOnChange);
+
+    // Dispose of controllers
     _mobileNumberController.dispose();
     _passwordController.dispose();
     super.dispose();

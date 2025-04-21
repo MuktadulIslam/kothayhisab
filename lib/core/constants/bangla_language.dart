@@ -8,12 +8,12 @@ class BanglaLanguage {
   static const purchase = 'ক্রয়';
   static const expense = 'ব্যয়';
   static const income = 'আয়';
-  static const addStoreProducts = 'মজুদ যোগ করুন';
+  static const addStoreProducts = 'মজুদ করুন';
   static const seeStoredProducts = 'মজুদ দেখুন';
   static const addCategory = 'ক্যাটাগরি যোগ করুন';
 
-  static const addSellProducts = 'বিক্রয় যোগ করুন';
-  static const seeSellProducts = 'বিক্রয় দেখুন';
+  static const addSaleProducts = 'বিক্রয় করুন';
+  static const seeSaleProducts = 'বিক্রয় দেখুন';
   static const monthlyReport = 'মাসিক হিসাব';
 
   static const allShops = 'দোকান সমূহ';

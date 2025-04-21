@@ -1,24 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:kothayhisab/data/api/services/inventory_service.dart';
+import 'package:kothayhisab/data/api/services/sales_service.dart';
+import 'package:kothayhisab/data/models/sales_model.dart';
+
 import 'package:kothayhisab/presentation/common_widgets/app_bar.dart';
 import 'package:kothayhisab/presentation/common_widgets/custom_bottom_app_bar.dart';
 import 'package:kothayhisab/core/utils/currency_formatter.dart';
-import 'package:kothayhisab/data/models/inventory_model.dart';
 
-class AddInventoryScreen extends StatefulWidget {
+class AddSalesScreen extends StatefulWidget {
+  const AddSalesScreen({super.key});
+
   @override
-  _AddInventoryScreenState createState() => _AddInventoryScreenState();
+  // ignore: library_private_types_in_public_api
+  _AddSalesScreenState createState() => _AddSalesScreenState();
 }
 
-class _AddInventoryScreenState extends State<AddInventoryScreen> {
+class _AddSalesScreenState extends State<AddSalesScreen> {
   final TextEditingController _textController = TextEditingController();
   final FocusNode _textFocusNode = FocusNode();
-  final InventoryService _inventoryService = InventoryService();
+  final SalesService _salesService = SalesService();
 
   bool _isLoading = false;
   bool _isSaving = false;
-  List<InventoryItem> _parsedItems = [];
+  List<SalesItem> _parsedItems = [];
   bool _hasError = false;
   String _errorMessage = '';
   bool _productsVisible = false;
@@ -118,7 +122,7 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
     });
 
     try {
-      final items = await _inventoryService.parseInventoryText(text);
+      final items = await _salesService.parseSalesText(text);
 
       setState(() {
         // Add new items to existing items list instead of replacing
@@ -155,7 +159,7 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
     }
   }
 
-  Future<void> _confirmInventory() async {
+  Future<void> _cashSale() async {
     if (_parsedItems.isEmpty) {
       setState(() {
         _hasError = true;
@@ -171,15 +175,15 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
     });
 
     try {
-      final result = await _inventoryService.confirmInventory(
+      final result = await _salesService.confirmSales(
         _parsedItems,
         _textController.text.trim(),
       );
 
       if (result) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('মজুদ সফলভাবে সংরক্ষিত হয়েছে')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('বিক্রয় সফলভাবে সংরক্ষিত হয়েছে')),
+        );
 
         // Reset the state but don't navigate back
         setState(() {
@@ -207,13 +211,14 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
     }
   }
 
+  Future<void> _dueSale() async {}
   // Calculate total price of all items
   double _calculateTotalPrice() {
     return _parsedItems.fold(0.0, (total, item) => total + item.price);
   }
 
   // Format quantity with or without description
-  String _formatQuantity(InventoryItem item) {
+  String _formatQuantity(SalesItem item) {
     String quantity =
         _useBengaliDigits
             ? BdTakaFormatter.numberToBengaliDigits(item.quantity)
@@ -243,7 +248,7 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
 
     return Scaffold(
       resizeToAvoidBottomInset: true, // Allow resizing when keyboard appears
-      appBar: CustomAppBar('মজুদ যোগ করুন'),
+      appBar: CustomAppBar('বিক্রয় করুন'),
       body: SafeArea(
         child: GestureDetector(
           // Add GestureDetector to dismiss keyboard when tapping outside input
@@ -474,8 +479,8 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
               // Action buttons - these stay at the bottom
               Padding(
                 padding: EdgeInsets.only(
-                  left: 16.0,
-                  right: 16.0,
+                  left: 10.0,
+                  right: 10.0,
                   top: 8.0,
                   bottom:
                       isKeyboardOpen
@@ -501,7 +506,26 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
                         child: Text('বাতিল'),
                       ),
                     ),
-                    SizedBox(width: 16),
+                    SizedBox(width: 10),
+                    if (_textController.text.trim().isEmpty &&
+                        !_textFocusNode.hasFocus &&
+                        _productsVisible &&
+                        _parsedItems.isNotEmpty)
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color.fromARGB(255, 237, 68, 68),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          onPressed: _isLoading || _isSaving ? null : _dueSale,
+                          child: Text('বাকিতে বিক্রয়'),
+                        ),
+                      ),
+                    SizedBox(width: 10),
                     Expanded(
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
@@ -517,7 +541,7 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
                                 ? null
                                 : (_textController.text.trim().isEmpty &&
                                         _productsVisible
-                                    ? _confirmInventory
+                                    ? _cashSale
                                     : _parseInventoryText),
                         child:
                             _isLoading || _isSaving
@@ -533,7 +557,7 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
                                   _textController.text.trim().isNotEmpty ||
                                           _textFocusNode.hasFocus
                                       ? 'পণ্য দেখুন'
-                                      : 'মজুদ করুন',
+                                      : 'নগদ বিক্রয়',
                                 ),
                       ),
                     ),

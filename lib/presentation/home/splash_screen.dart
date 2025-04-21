@@ -1,18 +1,17 @@
-// lib/screens/splash_screen.dart
 import 'package:flutter/material.dart';
+import 'package:kothayhisab/core/constants/app_routes.dart';
 import 'package:kothayhisab/data/api/services/auth_service.dart';
-import 'package:kothayhisab/core/constants/bangla_language.dart';
+import 'package:kothayhisab/config/app_config.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({Key? key}) : super(key: key);
+  const SplashScreen({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _SplashScreenState createState() => _SplashScreenState();
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  final AuthService _authService = AuthService();
-
   @override
   void initState() {
     super.initState();
@@ -23,13 +22,13 @@ class _SplashScreenState extends State<SplashScreen> {
     // Add a small delay to show the splash screen
     await Future.delayed(const Duration(seconds: 1));
 
-    final bool isLoggedIn = await _authService.isLoggedIn();
+    final bool isAuthenticated = await AuthService.isAuthenticated();
 
     if (mounted) {
-      if (isLoggedIn) {
-        Navigator.of(context).pushReplacementNamed('/');
+      if (isAuthenticated) {
+        Navigator.of(context).pushReplacementNamed(AppRoutes.homePage);
       } else {
-        Navigator.of(context).pushReplacementNamed('/login');
+        Navigator.of(context).pushReplacementNamed(AppRoutes.loginPage);
       }
     }
   }
@@ -44,7 +43,7 @@ class _SplashScreenState extends State<SplashScreen> {
             FlutterLogo(size: 100),
             SizedBox(height: 24),
             Text(
-              BanglaLanguage.appName,
+              App.appName,
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 48),

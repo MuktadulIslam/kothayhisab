@@ -2,15 +2,16 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:kothayhisab/config/app_config.dart';
 
 class AuthService {
-  static const String baseUrl =
-      'https://smartpricescrive.onrender.com/api/v1'; // For Android emulator
-  static const String tokenKey = 'auth_token';
-  static const String userKey = 'user_data';
+  // Private constructor to prevent instantiation
+  AuthService._();
+  static const String _tokenKey = 'auth_token';
+  static const String _userKey = 'user_data';
   // Register a new user
   // Updated register method for AuthService class
-  Future<Map<String, dynamic>> register(
+  static Future<Map<String, dynamic>> register(
     String mobileNumber,
     String password,
     String name, {
@@ -33,7 +34,7 @@ class AuthService {
 
       // Make the request matching the Postman format
       final response = await http.post(
-        Uri.parse('$baseUrl/auth/register'),
+        Uri.parse('${App.backendUrl}/auth/register'),
         // Only add Content-Type if needed - Postman example doesn't have it
         headers: {'Content-Type': 'application/json'},
         body: body,
@@ -63,7 +64,7 @@ class AuthService {
           }
         }
       }
-
+      data['status_code'] = response.statusCode;
       return data;
     } catch (e) {
       print('Registration error details: $e');
@@ -73,7 +74,7 @@ class AuthService {
 
   // Login with credentials
   // Updated login method for AuthService class
-  Future<Map<String, dynamic>> login(
+  static Future<Map<String, dynamic>> login(
     String mobileNumber,
     String password,
   ) async {
@@ -86,14 +87,11 @@ class AuthService {
 
       // Make the request matching the Postman format
       final response = await http.post(
-        Uri.parse('$baseUrl/auth/login'),
+        Uri.parse('${App.backendUrl}/auth/login'),
         // Only add Content-Type if needed - Postman example doesn't have it
         headers: {'Content-Type': 'application/json'},
         body: body,
       );
-
-      print('Status code: ${response.statusCode}');
-      print('Response body: ${response.body}');
 
       // Parse the response
       Map<String, dynamic> data;
@@ -117,6 +115,8 @@ class AuthService {
         }
       }
 
+      // Add the status code to the data map
+      data['status_code'] = response.statusCode;
       return data;
     } catch (e) {
       print('Connection error details: $e');
@@ -125,7 +125,7 @@ class AuthService {
   }
 
   // Logout the user
-  Future<Map<String, dynamic>> logout() async {
+  static Future<Map<String, dynamic>> logout() async {
     try {
       // final token = await getToken();
 
@@ -134,7 +134,7 @@ class AuthService {
       // }
 
       // final response = await http.post(
-      //   Uri.parse('$baseUrl/logout'),
+      //   Uri.parse('${App.backendUrl}/logout'),
       //   headers: {'Content-Type': 'application/json', 'Authorization': token},
       // );
 
@@ -152,34 +152,34 @@ class AuthService {
   }
 
   // Save auth token to shared preferences
-  Future<void> _saveToken(String token) async {
+  static Future<void> _saveToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(tokenKey, token);
+    await prefs.setString(_tokenKey, token);
   }
 
   // Save user data to shared preferences
-  Future<void> _saveUserData(String userData) async {
+  static Future<void> _saveUserData(String userData) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(userKey, userData);
+    await prefs.setString(_userKey, userData);
   }
 
   // Clear auth data (token and user info) from shared preferences
-  Future<void> _clearAuthData() async {
+  static Future<void> _clearAuthData() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(tokenKey);
-    await prefs.remove(userKey);
+    await prefs.remove(_tokenKey);
+    await prefs.remove(_userKey);
   }
 
   // Get token from shared preferences
-  Future<String?> getToken() async {
+  static Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(tokenKey);
+    return prefs.getString(_tokenKey);
   }
 
   // Get user data from shared preferences
   Future<Map<String, dynamic>?> getUserData() async {
     final prefs = await SharedPreferences.getInstance();
-    final userData = prefs.getString(userKey);
+    final userData = prefs.getString(_userKey);
     if (userData != null) {
       return jsonDecode(userData) as Map<String, dynamic>;
     }
@@ -187,8 +187,9 @@ class AuthService {
   }
 
   // Check if user is logged in
-  Future<bool> isLoggedIn() async {
+  static Future<bool> isAuthenticated() async {
     final token = await getToken();
-    return token != null;
+    // return token != null;
+    return token != null && token.isNotEmpty;
   }
 }

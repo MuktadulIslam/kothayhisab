@@ -1,35 +1,35 @@
-// lib/screens/inventory_page.dart
 import 'package:flutter/material.dart';
-import 'package:kothayhisab/data/api/services/inventory_service.dart';
+import 'package:kothayhisab/data/api/services/sales_service.dart';
+
 import 'package:kothayhisab/presentation/common_widgets/app_bar.dart';
 import 'package:kothayhisab/presentation/common_widgets/custom_bottom_app_bar.dart';
 import 'package:kothayhisab/core/utils/currency_formatter.dart';
-import 'package:kothayhisab/data/models/inventory_model.dart';
+import 'package:kothayhisab/data/models/sales_model.dart';
 
-class InventoryPage extends StatefulWidget {
-  const InventoryPage({Key? key}) : super(key: key);
+class SalesPage extends StatefulWidget {
+  const SalesPage({Key? key}) : super(key: key);
 
   @override
-  State<InventoryPage> createState() => _InventoryPageState();
+  State<SalesPage> createState() => _SalesPageState();
 }
 
-class _InventoryPageState extends State<InventoryPage> {
+class _SalesPageState extends State<SalesPage> {
   bool isLoading = true;
-  List<InventoryItem> inventoryItems = [];
+  List<SalesItem> salesItems = [];
   String errorMessage = '';
   final TextEditingController _searchController = TextEditingController();
-  List<InventoryItem> filteredItems = [];
-  Map<String, List<InventoryItem>> groupedItems = {};
+  List<SalesItem> filteredItems = [];
+  Map<String, List<SalesItem>> groupedItems = {};
 
   // Control whether to use Bengali digits
   bool _useBengaliDigits = true;
 
-  final InventoryService _inventoryService = InventoryService();
+  final SalesService _salesService = SalesService();
 
   @override
   void initState() {
     super.initState();
-    fetchInventoryData();
+    fetchSalesData();
 
     _searchController.addListener(() {
       filterItems(_searchController.text);
@@ -46,12 +46,12 @@ class _InventoryPageState extends State<InventoryPage> {
     // Trim whitespace from both ends of the query
     String trimmedQuery = query.trim();
 
-    List<InventoryItem> items;
+    List<SalesItem> items;
     if (trimmedQuery.isEmpty) {
-      items = List.from(inventoryItems);
+      items = List.from(salesItems);
     } else {
       items =
-          inventoryItems
+          salesItems
               .where(
                 (item) => item.name.toLowerCase().contains(
                   trimmedQuery.toLowerCase(),
@@ -67,10 +67,8 @@ class _InventoryPageState extends State<InventoryPage> {
   }
 
   // Group items by date (formatted as a string)
-  Map<String, List<InventoryItem>> _groupItemsByDate(
-    List<InventoryItem> items,
-  ) {
-    Map<String, List<InventoryItem>> result = {};
+  Map<String, List<SalesItem>> _groupItemsByDate(List<SalesItem> items) {
+    Map<String, List<SalesItem>> result = {};
 
     for (var item in items) {
       String dateKey = _formatDate(item.entryDate);
@@ -121,22 +119,22 @@ class _InventoryPageState extends State<InventoryPage> {
   }
 
   // Calculate sum of prices for a list of items
-  double _calculateTotalPrice(List<InventoryItem> items) {
+  double _calculateTotalPrice(List<SalesItem> items) {
     return items.fold(0.0, (total, item) => total + item.price);
   }
 
-  Future<void> fetchInventoryData() async {
+  Future<void> fetchSalesData() async {
     setState(() {
       isLoading = true;
       errorMessage = '';
     });
 
     try {
-      // Add method to get inventory items in InventoryService
-      final result = await _inventoryService.getInventoryItems();
+      // Add method to get sales items in SalesService
+      final result = await _salesService.getSalesItems();
 
       setState(() {
-        inventoryItems = result;
+        salesItems = result;
         filteredItems = List.from(result);
         groupedItems = _groupItemsByDate(result);
         isLoading = false;
@@ -152,7 +150,7 @@ class _InventoryPageState extends State<InventoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar('মজুদ তালিকা'),
+      appBar: CustomAppBar('বিক্রয় তালিকা'),
       body: Column(
         children: [
           Padding(
@@ -299,7 +297,7 @@ class _InventoryPageState extends State<InventoryPage> {
                             // Items for this date
                             ...dateItems.asMap().entries.map((entry) {
                               int index = entry.key;
-                              InventoryItem item = entry.value;
+                              SalesItem item = entry.value;
 
                               return Container(
                                 decoration: BoxDecoration(
@@ -392,7 +390,7 @@ class _InventoryPageState extends State<InventoryPage> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: fetchInventoryData,
+        onPressed: fetchSalesData,
         backgroundColor: const Color(0xFF01579B),
         child: const Icon(Icons.refresh),
       ),
