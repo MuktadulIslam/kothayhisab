@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kothayhisab/data/models/shop_model.dart';
 import 'package:kothayhisab/presentation/common_widgets/app_bar.dart';
 import 'package:kothayhisab/presentation/common_widgets/custom_bottom_app_bar.dart';
 import 'package:kothayhisab/presentation/common_widgets/store_card.dart';
@@ -20,7 +21,8 @@ class MenuItem {
 }
 
 class ShopScreen extends StatelessWidget {
-  const ShopScreen({Key? key}) : super(key: key);
+  const ShopScreen({super.key, required this.shop});
+  final Shop shop;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +30,7 @@ class ShopScreen extends StatelessWidget {
     final List<MenuItem> menuItems = [
       MenuItem(
         title: 'মজুদ করুন', // "Products" in Bengali
-        routePath: '/shop-details/store/add_inventory',
+        routePath: '/shop-details/add-inventory',
         icon: Icons.add_business_sharp,
         backgroundColor: const Color.fromARGB(
           255,
@@ -40,14 +42,14 @@ class ShopScreen extends StatelessWidget {
       ),
       MenuItem(
         title: 'মজুদ দেখুন', // "Sales" in Bengali
-        routePath: '/shop-details/store/see_inventory',
+        routePath: '/shop-details/see-inventory',
         icon: Icons.open_with,
         backgroundColor: const Color(0xFFE6F9E6),
         iconColor: Colors.green,
       ),
       MenuItem(
         title: 'বিক্রয় করুন', // "Products" in Bengali
-        routePath: '/shop-details/store/add_sales',
+        routePath: '/shop-details/add_sales',
         icon: Icons.add_business_sharp,
         backgroundColor: const Color.fromARGB(
           255,
@@ -59,7 +61,7 @@ class ShopScreen extends StatelessWidget {
       ),
       MenuItem(
         title: 'বিক্রয় দেখুন', // "Sales" in Bengali
-        routePath: '/shop-details/store/see_sales',
+        routePath: '/shop-details/see_sales',
         icon: Icons.open_with,
         backgroundColor: const Color(0xFFE6F9E6),
         iconColor: Colors.green,
@@ -67,7 +69,7 @@ class ShopScreen extends StatelessWidget {
 
       MenuItem(
         title: 'বাকির হিসাব', // "Accounts" in Bengali
-        routePath: '/shop-details/store/see_inventory',
+        routePath: '/shop-details/see_inventory',
         icon: Icons.account_balance_wallet_outlined,
         backgroundColor: const Color.fromARGB(255, 217, 219, 227),
         iconColor: Colors.indigo,
@@ -83,14 +85,14 @@ class ShopScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
-      appBar: CustomAppBar('মুরাদ ষ্টোর'), // "Root Store" in Bengali
+      appBar: CustomAppBar(shop.name), // "Root Store" in Bengali
       body: Padding(
         padding: const EdgeInsets.all(10.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Store Card
-            StoreCard(),
+            StoreCard(shop: shop),
             const SizedBox(height: 24),
 
             // Grid Menu
@@ -104,7 +106,10 @@ class ShopScreen extends StatelessWidget {
                 ),
                 itemCount: menuItems.length,
                 itemBuilder: (context, index) {
-                  return MenuItemCard(menuItem: menuItems[index]);
+                  return MenuItemCard(
+                    menuItem: menuItems[index],
+                    shopId: shop.id.toString(),
+                  );
                 },
               ),
             ),
@@ -118,14 +123,19 @@ class ShopScreen extends StatelessWidget {
 
 class MenuItemCard extends StatelessWidget {
   final MenuItem menuItem;
+  final String shopId; // Optional shop ID parameter
 
-  const MenuItemCard({Key? key, required this.menuItem}) : super(key: key);
+  const MenuItemCard({super.key, required this.menuItem, required this.shopId});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.pushNamed(context, menuItem.routePath);
+        Navigator.pushNamed(
+          context,
+          menuItem.routePath,
+          arguments: {'shopId': shopId},
+        );
       },
       child: Container(
         decoration: BoxDecoration(

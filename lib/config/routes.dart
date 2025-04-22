@@ -1,6 +1,7 @@
 // lib/config/routes.dart
 import 'package:flutter/material.dart';
 import 'package:kothayhisab/core/constants/app_routes.dart';
+import 'package:kothayhisab/data/models/shop_model.dart';
 
 import 'package:kothayhisab/presentation/home/home_screen.dart';
 import 'package:kothayhisab/presentation/home/splash_screen.dart';
@@ -32,11 +33,42 @@ final Map<String, WidgetBuilder> appRoutes = {
 
   AppRoutes.addShopPage: (context) => const ShopCreationScreen(),
 
-  '/shop-details': (context) => const ShopScreen(),
+  // Shop details with shopId as parameter
+  '/shop-details': (context) {
+    final args =
+        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+    final shop =
+        args?['shop'] as Shop? ?? Shop(name: '', address: '', gpsLocation: '');
+    return ShopScreen(shop: shop);
+  },
 
-  '/shop-details/store/add_inventory': (context) => AddInventoryScreen(),
-  '/shop-details/store/see_inventory': (context) => InventoryPage(),
+  // Inventory routes with shopId
+  '/shop-details/add-inventory': (context) {
+    final args =
+        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+    final shopId = args?['shopId'] as String? ?? '';
+    return AddInventoryScreen(shopId: shopId);
+  },
 
-  '/shop-details/store/add_sales': (context) => AddSalesScreen(),
-  '/shop-details/store/see_sales': (context) => SalesPage(),
+  '/shop-details/see-inventory': (context) {
+    final args =
+        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+    final shopId = args?['shopId'] as String? ?? '';
+    return InventoryPage(shopId: shopId);
+  },
+
+  // Sales routes with shopId
+  '/shop-details/add_sales': (context) {
+    final args =
+        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+    final shopId = args?['shopId'] as String? ?? '';
+    return AddSalesScreen(shopId: shopId);
+  },
+
+  '/shop-details/see_sales': (context) {
+    final args =
+        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+    final shopId = args?['shopId'] as String? ?? '';
+    return SalesPage(shopId: shopId);
+  },
 };

@@ -8,7 +8,8 @@ import 'package:kothayhisab/presentation/common_widgets/custom_bottom_app_bar.da
 import 'package:kothayhisab/core/utils/currency_formatter.dart';
 
 class AddSalesScreen extends StatefulWidget {
-  const AddSalesScreen({super.key});
+  final String shopId;
+  const AddSalesScreen({super.key, required this.shopId});
 
   @override
   // ignore: library_private_types_in_public_api
@@ -178,6 +179,7 @@ class _AddSalesScreenState extends State<AddSalesScreen> {
       final result = await _salesService.confirmSales(
         _parsedItems,
         _textController.text.trim(),
+        widget.shopId,
       );
 
       if (result) {

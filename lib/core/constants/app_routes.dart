@@ -1,3 +1,5 @@
+// lib/core/constants/app_routes.dart
+
 final List<String> nonAuthRoutes = [
   AppRoutes.loginPage,
   AppRoutes.registerPage,

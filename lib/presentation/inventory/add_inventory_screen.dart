@@ -7,6 +7,9 @@ import 'package:kothayhisab/core/utils/currency_formatter.dart';
 import 'package:kothayhisab/data/models/inventory_model.dart';
 
 class AddInventoryScreen extends StatefulWidget {
+  final String shopId;
+  const AddInventoryScreen({super.key, required this.shopId});
+
   @override
   _AddInventoryScreenState createState() => _AddInventoryScreenState();
 }
@@ -28,6 +31,7 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
 
   @override
   void initState() {
+    print('Shop ID: ${widget.shopId}');
     super.initState();
     _textFocusNode.addListener(_onFocusChange);
   }
@@ -156,6 +160,7 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
   }
 
   Future<void> _confirmInventory() async {
+    print('Shop ID: ${widget.shopId}');
     if (_parsedItems.isEmpty) {
       setState(() {
         _hasError = true;
@@ -174,6 +179,7 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
       final result = await _inventoryService.confirmInventory(
         _parsedItems,
         _textController.text.trim(),
+        widget.shopId,
       );
 
       if (result) {

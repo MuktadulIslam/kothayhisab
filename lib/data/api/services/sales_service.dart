@@ -38,7 +38,7 @@ class SalesService {
   }
 
   // Get all sales items
-  Future<List<SalesItem>> getSalesItems() async {
+  Future<List<SalesItem>> getSalesItems(String shopId) async {
     try {
       // Get token from auth service
       final token = await AuthService.getToken();
@@ -48,14 +48,12 @@ class SalesService {
       }
 
       final response = await http.get(
-        Uri.parse('${App.backendUrl}/sales?shop_id=1'),
+        Uri.parse('${App.backendUrl}/sales?shop_id=$shopId'),
         headers: {'Authorization': token, 'Accept-Charset': 'utf-8'},
       );
 
       // Proper encoding handling for response body
       final String responseBody = utf8.decode(response.bodyBytes);
-      print('Sales fetch status code: ${response.statusCode}');
-      print('Sales fetch response body (decoded): $responseBody');
 
       if (response.statusCode == 200) {
         try {
@@ -116,11 +114,8 @@ class SalesService {
         body: jsonEncode({'text': text}),
       );
 
-      print('Status code: ${response.statusCode}');
-
       // Proper encoding handling for response body
       final String responseBody = utf8.decode(response.bodyBytes);
-      print('Response body in sales (decoded): $responseBody');
 
       if (response.statusCode == 200) {
         try {
@@ -164,7 +159,11 @@ class SalesService {
   }
 
   // Confirm and save inventory items
-  Future<bool> confirmSales(List<SalesItem> items, String rawText) async {
+  Future<bool> confirmSales(
+    List<SalesItem> items,
+    String rawText,
+    String shopId,
+  ) async {
     try {
       // Get token from shared preferences
       final token = await AuthService.getToken();
@@ -178,10 +177,8 @@ class SalesService {
         'raw_text': rawText,
       };
 
-      print('Request Sales payload: ${jsonEncode(payload)}');
-
       final response = await http.post(
-        Uri.parse('${App.backendUrl}/sales/confirm?shop_id=1'),
+        Uri.parse('${App.backendUrl}/sales/confirm?shop_id=$shopId'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token,
@@ -192,8 +189,6 @@ class SalesService {
 
       // Proper encoding handling for response body
       final String responseBody = utf8.decode(response.bodyBytes);
-      print('Confirm status code: ${response.statusCode}');
-      print('Confirm response body (decoded): $responseBody');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return true;

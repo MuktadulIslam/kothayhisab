@@ -3,7 +3,7 @@ import 'package:kothayhisab/core/constants/app_routes.dart';
 import 'package:kothayhisab/data/api/services/auth_service.dart';
 import 'package:kothayhisab/presentation/common_widgets/app_bar.dart';
 import 'package:kothayhisab/presentation/common_widgets/custom_bottom_app_bar.dart';
-import 'package:kothayhisab/data/api/services/user_service.dart';
+import 'package:kothayhisab/data/api/services/auth_service.dart';
 
 class MenuItem {
   final String text;
@@ -33,7 +33,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _isLoadingProfile = true;
   String _userName = '';
   String _userMobile = '';
-  String _userEmail = '';
 
   @override
   void initState() {
@@ -47,14 +46,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
 
     try {
-      final name = await UserProfileService.getUserName();
-      final mobile = await UserProfileService.getUserMobileNumber();
-      final email = await UserProfileService.getUserEmail();
+      final userData = await AuthService.getUserData();
 
       setState(() {
-        _userName = name ?? 'User';
-        _userMobile = mobile ?? '';
-        _userEmail = email ?? '';
+        _userName = userData?['name'] ?? 'User';
+        _userMobile = userData?['mobile_number'] ?? '+01xxxxxxxx';
         _isLoadingProfile = false;
       });
     } catch (e) {
@@ -200,17 +196,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       color: Colors.black87,
                                     ),
                                   ),
-                                  if (_userEmail.isNotEmpty) ...[
-                                    const SizedBox(height: 5),
-                                    Text(
-                                      _userEmail,
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.black87,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
                                 ],
                               ),
                             ),

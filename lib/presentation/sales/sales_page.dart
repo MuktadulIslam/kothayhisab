@@ -7,7 +7,8 @@ import 'package:kothayhisab/core/utils/currency_formatter.dart';
 import 'package:kothayhisab/data/models/sales_model.dart';
 
 class SalesPage extends StatefulWidget {
-  const SalesPage({super.key});
+  final String shopId;
+  const SalesPage({super.key, required this.shopId});
 
   @override
   State<SalesPage> createState() => _SalesPageState();
@@ -130,7 +131,7 @@ class _SalesPageState extends State<SalesPage> {
 
     try {
       // Add method to get sales items in SalesService
-      final result = await _salesService.getSalesItems();
+      final result = await _salesService.getSalesItems(widget.shopId);
 
       setState(() {
         salesItems = result;

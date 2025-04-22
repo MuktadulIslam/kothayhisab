@@ -39,7 +39,7 @@ class InventoryService {
   }
 
   // Get all inventory items
-  Future<List<InventoryItem>> getInventoryItems() async {
+  Future<List<InventoryItem>> getInventoryItems(String shopId) async {
     try {
       // Get token from auth service
       final token = await AuthService.getToken();
@@ -49,14 +49,12 @@ class InventoryService {
       }
 
       final response = await http.get(
-        Uri.parse('${App.backendUrl}/inventory?shop_id=1'),
+        Uri.parse('${App.backendUrl}/inventory?shop_id=$shopId'),
         headers: {'Authorization': token, 'Accept-Charset': 'utf-8'},
       );
 
       // Proper encoding handling for response body
       final String responseBody = utf8.decode(response.bodyBytes);
-      print('Inventory fetch status code: ${response.statusCode}');
-      print('Inventory fetch response body (decoded): $responseBody');
 
       if (response.statusCode == 200) {
         try {
@@ -117,11 +115,8 @@ class InventoryService {
         body: jsonEncode({'text': text}),
       );
 
-      print('Status code: ${response.statusCode}');
-
       // Proper encoding handling for response body
       final String responseBody = utf8.decode(response.bodyBytes);
-      print('Response body (decoded): $responseBody');
 
       if (response.statusCode == 200) {
         try {
@@ -168,6 +163,7 @@ class InventoryService {
   Future<bool> confirmInventory(
     List<InventoryItem> items,
     String rawText,
+    String shopId,
   ) async {
     try {
       // Get token from shared preferences
@@ -182,10 +178,8 @@ class InventoryService {
         'raw_text': rawText,
       };
 
-      print('Request Inventory payload: ${jsonEncode(payload)}');
-
       final response = await http.post(
-        Uri.parse('${App.backendUrl}/inventory/confirm?shop_id=1'),
+        Uri.parse('${App.backendUrl}/inventory/confirm?shop_id=$shopId'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token,
@@ -196,8 +190,6 @@ class InventoryService {
 
       // Proper encoding handling for response body
       final String responseBody = utf8.decode(response.bodyBytes);
-      print('Confirm status code: ${response.statusCode}');
-      print('Confirm response body (decoded): $responseBody');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return true;

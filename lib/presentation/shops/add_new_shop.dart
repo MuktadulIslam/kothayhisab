@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:geocoding/geocoding.dart';
 import 'package:kothayhisab/presentation/common_widgets/app_bar.dart';
 import 'package:kothayhisab/presentation/common_widgets/custom_bottom_app_bar.dart';
+import 'package:kothayhisab/data/api/services/shops_service.dart';
+import 'package:kothayhisab/data/models/shop_model.dart';
+import 'package:kothayhisab/core/constants/app_routes.dart';
 
 class ShopCreationScreen extends StatefulWidget {
   const ShopCreationScreen({super.key});
@@ -16,6 +17,7 @@ class ShopCreationScreen extends StatefulWidget {
 class _ShopCreationScreenState extends State<ShopCreationScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
+  final ShopsService _shopsService = ShopsService();
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -126,37 +128,52 @@ class _ShopCreationScreenState extends State<ShopCreationScreen> {
 
     try {
       String gpsLocation =
-          '${_currentPosition!.latitude}, ${_currentPosition!.longitude}';
+          '{latitude: ${_currentPosition!.latitude}, longitude: ${_currentPosition!.longitude}}';
       String address =
           _addressController.text.isNotEmpty
               ? _addressController.text
               : 'Unknown Address';
 
-      // API call to create a new shop
-      final response = await http.post(
-        Uri.parse('https://smartpricescrive.onrender.com/api/v1/shops/'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization':
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMTYwMTY3ODA1OSIsImV4cCI6MTc0NTc0NDUwNH0.pFg7PCIXXCIA0GVsPTMJQ45DKSXlXo3Zl8jiFCEPis4',
-        },
-        body: jsonEncode({
-          'shop_name': _nameController.text,
-          'gps_location': gpsLocation,
-          'address': address,
-        }),
+      // Create shop object
+      Shop shop = Shop(
+        name: _nameController.text,
+        address: address,
+        gpsLocation: gpsLocation,
       );
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        setState(() {
-          _successMessage = 'Shop created successfully!';
-          // Clear form after successful submission
-          _nameController.clear();
-        });
-      } else {
-        setState(() {
-          _errorMessage = 'Failed to create shop: ${response.body}';
-        });
+      // Call the service to create the shop
+      final result = await _shopsService.createShop(shop);
+
+      if (result) {
+        // Clear form after successful submission
+        _nameController.clear();
+
+        // Show success dialog with Go to Home button
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('সফল!'),
+              content: const Text('দোকান সফলভাবে যোগ করা হয়েছে!'),
+              actions: [
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: const Color(0xFF0069A5),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close dialog
+                    Navigator.of(context).pushReplacementNamed(
+                      AppRoutes.homePage,
+                    ); // Navigate to home
+                  },
+                  child: const Text('হোম পেজে যান'),
+                ),
+              ],
+            );
+          },
+        );
       }
     } catch (e) {
       setState(() {
@@ -188,7 +205,6 @@ class _ShopCreationScreenState extends State<ShopCreationScreen> {
                     decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.store, color: Colors.grey),
                       labelText: 'দোকান নাম',
-                      // hintText: 'দোকান নাম',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(4),
                       ),
@@ -270,14 +286,14 @@ class _ShopCreationScreenState extends State<ShopCreationScreen> {
                 ),
 
               // Location info
-              if (_currentPosition != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 16.0),
-                  child: Text(
-                    'GPS: ${_currentPosition!.latitude}, ${_currentPosition!.longitude}',
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                ),
+              // if (_currentPosition != null)
+              //   Padding(
+              //     padding: const EdgeInsets.only(top: 16.0),
+              //     child: Text(
+              //       'GPS: ${_currentPosition!.latitude}, ${_currentPosition!.longitude}',
+              //       style: const TextStyle(fontSize: 12, color: Colors.grey),
+              //     ),
+              //   ),
             ],
           ),
         ),

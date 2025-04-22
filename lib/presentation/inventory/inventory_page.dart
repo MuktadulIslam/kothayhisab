@@ -7,7 +7,8 @@ import 'package:kothayhisab/core/utils/currency_formatter.dart';
 import 'package:kothayhisab/data/models/inventory_model.dart';
 
 class InventoryPage extends StatefulWidget {
-  const InventoryPage({Key? key}) : super(key: key);
+  final String shopId;
+  const InventoryPage({super.key, required this.shopId});
 
   @override
   State<InventoryPage> createState() => _InventoryPageState();
@@ -133,7 +134,7 @@ class _InventoryPageState extends State<InventoryPage> {
 
     try {
       // Add method to get inventory items in InventoryService
-      final result = await _inventoryService.getInventoryItems();
+      final result = await _inventoryService.getInventoryItems(widget.shopId);
 
       setState(() {
         inventoryItems = result;

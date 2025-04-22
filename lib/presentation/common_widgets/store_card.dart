@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:kothayhisab/data/models/shop_model.dart';
 
 class StoreCard extends StatelessWidget {
-  const StoreCard({super.key});
+  const StoreCard({super.key, required this.shop});
+  final Shop shop;
 
   @override
   Widget build(BuildContext context) {
@@ -37,9 +39,12 @@ class StoreCard extends StatelessWidget {
               ),
               const SizedBox(width: 16),
               // Store text
-              const Text(
-                'মুরাদ ষ্টোর', // "Root Store" in Bengali
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              Text(
+                shop.name, // "Root Store" in Bengali
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
               ),
               const Spacer(),
               // Button
@@ -68,12 +73,12 @@ class StoreCard extends StatelessWidget {
           const SizedBox(height: 16),
           // Location info
           Row(
-            children: const [
-              Icon(Icons.location_on, color: Colors.grey, size: 18),
-              SizedBox(width: 8),
+            children: [
+              const Icon(Icons.location_on, color: Colors.grey, size: 18),
+              const SizedBox(width: 8),
               Text(
-                'সাভার, ঢাকা', // "Dhaka, Root City" in Bengali
-                style: TextStyle(color: Colors.grey, fontSize: 14),
+                shop.address, // "Dhaka, Root City" in Bengali
+                style: const TextStyle(color: Colors.grey, fontSize: 14),
               ),
             ],
           ),
