@@ -46,6 +46,8 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
 
   void _onFocusChange() {
     // Trigger rebuild when focus changes
+    _hasError = false;
+    _errorMessage = '';
     setState(() {});
   }
 
@@ -508,41 +510,61 @@ class _AddInventoryScreenState extends State<AddInventoryScreen> {
                       ),
                     ),
                     SizedBox(width: 16),
-                    Expanded(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFF005A8D),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
+
+                    if (_textController.text.trim().isNotEmpty ||
+                        _textFocusNode.hasFocus)
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFF005A8D),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            padding: EdgeInsets.symmetric(vertical: 12),
                           ),
-                          padding: EdgeInsets.symmetric(vertical: 12),
+                          onPressed: _parseInventoryText,
+                          child:
+                              _isLoading || _isSaving
+                                  ? SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                  : Text('পণ্য দেখুন'),
                         ),
-                        onPressed:
-                            _isLoading || _isSaving
-                                ? null
-                                : (_textController.text.trim().isEmpty &&
-                                        _productsVisible
-                                    ? _confirmInventory
-                                    : _parseInventoryText),
-                        child:
-                            _isLoading || _isSaving
-                                ? SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                                : Text(
-                                  _textController.text.trim().isNotEmpty ||
-                                          _textFocusNode.hasFocus
-                                      ? 'পণ্য দেখুন'
-                                      : 'মজুদ করুন',
-                                ),
+                      )
+                    else
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFF005A8D),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          onPressed:
+                              _isLoading || _isSaving
+                                  ? null
+                                  : _confirmInventory,
+                          child:
+                              _isLoading || _isSaving
+                                  ? SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                  : Text('মজুদ করুন'),
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),

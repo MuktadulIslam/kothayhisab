@@ -69,7 +69,7 @@ class ShopScreen extends StatelessWidget {
 
       MenuItem(
         title: 'বাকির হিসাব', // "Accounts" in Bengali
-        routePath: '/shop-details/see_inventory',
+        routePath: '/shop-details/see_dues',
         icon: Icons.account_balance_wallet_outlined,
         backgroundColor: const Color.fromARGB(255, 217, 219, 227),
         iconColor: Colors.indigo,

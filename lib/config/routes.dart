@@ -1,6 +1,7 @@
 // lib/config/routes.dart
 import 'package:flutter/material.dart';
 import 'package:kothayhisab/core/constants/app_routes.dart';
+import 'package:kothayhisab/data/models/sales_model.dart';
 import 'package:kothayhisab/data/models/shop_model.dart';
 
 import 'package:kothayhisab/presentation/home/home_screen.dart';
@@ -12,6 +13,8 @@ import 'package:kothayhisab/presentation/profile/help_screen.dart';
 import 'package:kothayhisab/presentation/profile/profile_screen.dart';
 import 'package:kothayhisab/presentation/profile/settings_screen.dart';
 import 'package:kothayhisab/presentation/sales/add_sales_screen.dart';
+import 'package:kothayhisab/presentation/sales/add_due_sales_screen.dart';
+import 'package:kothayhisab/presentation/sales/due_sales_screen.dart';
 import 'package:kothayhisab/presentation/sales/sales_page.dart';
 import 'package:kothayhisab/presentation/shops/add_new_shop.dart';
 
@@ -71,4 +74,26 @@ final Map<String, WidgetBuilder> appRoutes = {
     final shopId = args?['shopId'] as String? ?? '';
     return SalesPage(shopId: shopId);
   },
+
+  '/shop-details/see_dues': (context) {
+    final args =
+        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+    final shopId = args?['shopId'] as String? ?? '';
+    return DuePage(shopId: shopId);
+  },
+
+  // Due sales route - usually accessed via AddSalesScreen
+  // '/shop-details/due_sales': (context) {
+  //   final args =
+  //       ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+  //   final shopId = args?['shopId'] as String? ?? '';
+  //   final products = args?['products'] as List<SalesItem>? ?? [];
+  //   final totalAmount = args?['totalAmount'] as double? ?? 0.0;
+
+  //   return DueSalesScreen(
+  //     shopId: shopId,
+  //     products: products,
+  //     totalAmount: totalAmount,
+  //   );
+  // },
 };

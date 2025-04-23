@@ -213,4 +213,185 @@ class SalesService {
       throw Exception('Error saving sales: $e');
     }
   }
+
+  // Parse inventory text
+  Future<Map<String, dynamic>> parseDuesText(String text) async {
+    try {
+      // Get token from shared preferences
+      final token = await AuthService.getToken();
+
+      if (token == null) {
+        throw Exception('No authentication token found');
+      }
+
+      final response = await http.post(
+        Uri.parse('${App.backendUrl}/due/parse'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token,
+          'Accept-Charset': 'utf-8',
+        },
+        body: jsonEncode({'text': text}),
+      );
+
+      // Proper encoding handling for response body
+      final String responseBody = utf8.decode(response.bodyBytes);
+
+      if (response.statusCode == 200) {
+        try {
+          final Map<String, dynamic> data = jsonDecode(responseBody);
+          return data;
+        } catch (e) {
+          print('Error parsing JSON response in due: $e');
+          throw Exception('Error parsing response in due: $e');
+        }
+      } else if (response.statusCode == 422) {
+        try {
+          final errorData = jsonDecode(responseBody);
+          final errorMessage =
+              errorData['detail'] ??
+              errorData['message'] ??
+              'Invalid input format';
+          throw Exception(
+            'Server could not parse input in sales: $errorMessage',
+          );
+        } catch (_) {
+          throw Exception('Server could not parse the sales text');
+        }
+      } else {
+        throw Exception(
+          'Server error (${response.statusCode}). Please try again later.',
+        );
+      }
+    } catch (e) {
+      print('Error parsing sales text: $e');
+      String errorMessage = e.toString();
+      if (errorMessage.contains(
+        'type \'double\' is not a subtype of type \'int\'',
+      )) {
+        errorMessage =
+            'Error processing numbers in the response. Please contact support.';
+      }
+      throw Exception(errorMessage);
+    }
+  }
+
+  Future<bool> confirmDueSale(
+    Map<String, dynamic> duesData,
+    List<SalesItem> items,
+    String rawText,
+    String shopId,
+  ) async {
+    try {
+      // Get token from shared preferences
+      final token = await AuthService.getToken();
+
+      if (token == null) {
+        throw Exception('No authentication token found');
+      }
+
+      final saleResponse = await http.post(
+        Uri.parse('${App.backendUrl}/sales/confirm?shop_id=$shopId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token,
+          'Accept-Charset': 'utf-8',
+        },
+        body: jsonEncode({
+          'sales': items.map((item) => item.toJson()).toList(),
+          'raw_text': rawText,
+        }),
+      );
+
+      final duesResponse = await http.post(
+        Uri.parse('${App.backendUrl}/due/confirm'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token,
+          'Accept-Charset': 'utf-8',
+        },
+        body: jsonEncode({'due_data': duesData, 'shop_id': shopId}),
+      );
+
+      if ((saleResponse.statusCode == 200 || saleResponse.statusCode == 201) &&
+          (duesResponse.statusCode == 200 || duesResponse.statusCode == 201)) {
+        return true;
+      } else if (saleResponse.statusCode == 401 ||
+          saleResponse.statusCode == 403 ||
+          duesResponse.statusCode == 401 ||
+          duesResponse.statusCode == 403) {
+        print('Authentication error. Please log in again.');
+        throw Exception('Authentication error. Please log in again.');
+      } else {
+        print(
+          'Failed to save due sale. Sale Status: ${saleResponse.statusCode} and Due Status ${duesResponse.statusCode}',
+        );
+        throw Exception(
+          'Failed to save due sale  Sale Status: ${saleResponse.statusCode} and Due Status ${duesResponse.statusCode}',
+        );
+      }
+    } catch (e) {
+      print('Error confirming sales: $e');
+      throw Exception('Error saving sales: $e');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getDueSales(String shopId) async {
+    try {
+      // Get token from auth service
+      final token = await AuthService.getToken();
+
+      if (token == null) {
+        throw Exception('No authentication token found');
+      }
+
+      final response = await http.get(
+        Uri.parse('${App.backendUrl}/due/shops/$shopId?skip=0&limit=100'),
+        headers: {'Authorization': token, 'Accept-Charset': 'utf-8'},
+      );
+
+      // Proper encoding handling for response body
+      final String responseBody = utf8.decode(response.bodyBytes);
+
+      if (response.statusCode == 200) {
+        try {
+          final List<dynamic> responseData = jsonDecode(responseBody);
+
+          // Keep the items as Map<String, dynamic> without converting to SalesItem
+          List<Map<String, dynamic>> items =
+              responseData.map((item) => item as Map<String, dynamic>).toList();
+
+          // Sort items by created_at (newest first)
+          items.sort((a, b) {
+            DateTime dateA = DateTime.parse(a['created_at']);
+            DateTime dateB = DateTime.parse(b['created_at']);
+            return dateB.compareTo(dateA);
+          });
+
+          return items;
+        } catch (e) {
+          print('Error parsing JSON response in dues: $e');
+          throw Exception('Error parsing response in dues: $e');
+        }
+      } else if (response.statusCode == 401 || response.statusCode == 403) {
+        throw Exception('Authentication error. Please log in again.');
+      } else {
+        try {
+          final errorData = jsonDecode(responseBody);
+          final errorMessage =
+              errorData['detail'] ??
+              errorData['message'] ??
+              'Failed to fetch dues';
+          throw Exception(errorMessage);
+        } catch (_) {
+          throw Exception(
+            'Failed to fetch dues. Status: ${response.statusCode}',
+          );
+        }
+      }
+    } catch (e) {
+      print('Error fetching dues: $e');
+      throw Exception('Error fetching dues: $e');
+    }
+  }
 }
