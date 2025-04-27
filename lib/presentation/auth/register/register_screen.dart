@@ -21,6 +21,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   bool _isLoading = false;
   String _errorMessage = '';
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   void initState() {
@@ -117,7 +119,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      'Register',
+                      'রেজিস্টার করুন',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w500,
@@ -131,76 +133,104 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     controller: _nameController,
                     keyboardType: TextInputType.name,
                     decoration: const InputDecoration(
-                      labelText: 'Full Name',
+                      labelText: 'পুরো নাম',
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.person),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your name';
+                        return 'আপনার নাম দিন';
                       }
                       return null;
                     },
                   ),
                   const SizedBox(height: 20),
 
-                  // Mobile Number Field
+                  // Mobile Number Field with 01 prefix validation
                   TextFormField(
                     controller: _mobileNumberController,
                     keyboardType: TextInputType.phone,
                     decoration: const InputDecoration(
-                      labelText: 'Mobile Number',
+                      labelText: 'মোবাইল নম্বর',
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.phone),
-                      hintText: '01xxxxxxxxx (11 digits)',
+                      hintText: '01XXXXXXXXX',
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your mobile number';
+                        return 'মোবাইল নম্বর দিন';
                       }
-                      // Add validation for exactly 11 digits
-                      if (value.length != 11 ||
-                          !RegExp(r'^\d{11}$').hasMatch(value)) {
-                        return "মোবাইল নম্বর অবশ্যই ঠিক ১১ সংখ্যার হতে হবে";
+                      // Check if number is 11 digits
+                      if (value.length != 11) {
+                        return 'মোবাইল নম্বর অবশ্যই ঠিক ১১ সংখ্যার হতে হবে';
+                      }
+                      // Check if number starts with 01
+                      if (!value.startsWith('01')) {
+                        return 'মোবাইল নম্বর অবশ্যই ০১ দিয়ে শুরু হতে হবে';
                       }
                       return null;
                     },
                   ),
                   const SizedBox(height: 20),
 
-                  // Password Field
+                  // Password Field with visibility toggle - removed 8 char minimum
                   TextFormField(
                     controller: _passwordController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Password',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.lock),
+                    obscureText: _obscurePassword,
+                    decoration: InputDecoration(
+                      labelText: 'পাসওয়ার্ড',
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.lock),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: Colors.grey,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+                      ),
+                      hintText: 'পাসওয়ার্ড দিন',
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter a password';
+                        return 'পাসওয়ার্ড দিন';
                       }
-                      if (value.length < 3) {
-                        return "পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে।";
-                      }
+                      // Removed the length check
                       return null;
                     },
                   ),
                   const SizedBox(height: 20),
 
-                  // Confirm Password Field
+                  // Confirm Password Field with visibility toggle
                   TextFormField(
                     controller: _confirmPasswordController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Confirm Password',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.lock_outline),
+                    obscureText: _obscureConfirmPassword,
+                    decoration: InputDecoration(
+                      labelText: 'পাসওয়ার্ড নিশ্চিত করুন',
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureConfirmPassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: Colors.grey,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscureConfirmPassword = !_obscureConfirmPassword;
+                          });
+                        },
+                      ),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please confirm your password';
+                        return 'পাসওয়ার্ড নিশ্চিত করুন';
                       }
                       if (value != _passwordController.text) {
                         return 'পাসওয়ার্ড মিলছে না।';
@@ -232,7 +262,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ? const CircularProgressIndicator(
                               color: Colors.white,
                             )
-                            : const Text('Register'),
+                            : const Text('রেজিস্টার'),
                   ),
                   const SizedBox(height: 20),
 
@@ -241,7 +271,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Text(
-                        "Already have an account? ",
+                        "ইতিমধ্যে একাউন্ট আছে? ",
                         style: TextStyle(fontSize: 14, color: Colors.black87),
                       ),
                       GestureDetector(
@@ -251,7 +281,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ).pushReplacementNamed(AppRoutes.loginPage);
                         },
                         child: const Text(
-                          'Login',
+                          'লগইন',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,

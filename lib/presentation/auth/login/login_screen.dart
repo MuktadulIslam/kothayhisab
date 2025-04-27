@@ -17,6 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _isLoading = false;
   String _errorMessage = '';
+  bool _obscurePassword = true; // For password visibility toggle
 
   @override
   void initState() {
@@ -62,7 +63,7 @@ class _LoginScreenState extends State<LoginScreen> {
           Navigator.of(context).pushReplacementNamed(AppRoutes.homePage);
         } else {
           _errorMessage =
-              'অ্যাপে একটি অপ্রত্যাশিত ত্রুটি ঘটেছে। দয়া করে আবার লগইন করুন।';
+              'অ্যাপে একটি অপ্রত্যাশিত ত্রুটি ঘটেছে। দয়া করে আবার লগইন করুন।';
         }
       } else if (response['status_code'] == 401) {
         setState(() {
@@ -104,7 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      'Login',
+                      'অ্যাপে  প্রবেশ',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w500,
@@ -113,37 +114,60 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  // Mobile Number Field
+                  // Mobile Number Field with validation
                   TextFormField(
                     controller: _mobileNumberController,
                     keyboardType: TextInputType.phone,
                     decoration: const InputDecoration(
-                      labelText: 'Mobile Number',
+                      labelText: 'মোবাইল নম্বর',
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.phone),
+                      hintText: '01XXXXXXXXX',
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your mobile number';
+                        return 'মোবাইল নম্বর দিন';
+                      }
+                      // Check if number is 11 digits and starts with 01
+                      if (value.length != 11) {
+                        return 'মোবাইল নম্বর অবশ্যই ঠিক ১১ সংখ্যার হতে হবে';
+                      }
+                      if (!value.startsWith('01')) {
+                        return 'মোবাইল নম্বর অবশ্যই ০১ দিয়ে শুরু হতে হবে';
                       }
                       return null;
                     },
                   ),
                   const SizedBox(height: 20),
 
-                  // Password Field
+                  // Password Field with visibility toggle and updated validation
                   TextFormField(
                     controller: _passwordController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Password',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.lock),
+                    obscureText: _obscurePassword,
+                    decoration: InputDecoration(
+                      labelText: 'পাসওয়ার্ড',
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.lock),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: Colors.grey,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+                      ),
+                      hintText: 'পাসওয়ার্ড',
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your password';
+                        return 'পাসওয়ার্ড দিন';
                       }
+                      // No minimum length check now - just make sure it's not empty
                       return null;
                     },
                   ),
@@ -171,7 +195,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ? const CircularProgressIndicator(
                               color: Colors.white,
                             )
-                            : const Text('Login'),
+                            : const Text('লগইন করুন'),
                   ),
                   const SizedBox(height: 20),
 
@@ -180,7 +204,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Text(
-                        "Don't have an account? ",
+                        "অ্যাকাউন্ট নেই? ",
                         style: TextStyle(fontSize: 14, color: Colors.black87),
                       ),
                       GestureDetector(
@@ -190,7 +214,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ).pushNamed(AppRoutes.registerPage);
                         },
                         child: const Text(
-                          'Register',
+                          'রেজিস্টার',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,

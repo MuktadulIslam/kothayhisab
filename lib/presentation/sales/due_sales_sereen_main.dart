@@ -17,7 +17,6 @@ class _DuePageState extends State<DuePage> {
   List<Map<String, dynamic>> dueItems = [];
   String errorMessage = '';
   final TextEditingController _searchController = TextEditingController();
-  final FocusNode _searchFocusNode = FocusNode();
   List<Map<String, dynamic>> filteredItems = [];
   Map<String, List<Map<String, dynamic>>> groupedItems = {};
 
@@ -39,7 +38,6 @@ class _DuePageState extends State<DuePage> {
   @override
   void dispose() {
     _searchController.dispose();
-    _searchFocusNode.dispose();
     super.dispose();
   }
 
@@ -63,30 +61,23 @@ class _DuePageState extends State<DuePage> {
 
     setState(() {
       filteredItems = items;
-      groupedItems = _groupItemsByCustomer(items);
+      groupedItems = _groupItemsByDate(items);
     });
   }
 
-  // Group items by customer name
-  Map<String, List<Map<String, dynamic>>> _groupItemsByCustomer(
+  // Group items by date (formatted as a string)
+  Map<String, List<Map<String, dynamic>>> _groupItemsByDate(
     List<Map<String, dynamic>> items,
   ) {
-    // Sort items by customer name first
-    items.sort(
-      (a, b) => (a['customer_name'] ?? '').toString().toLowerCase().compareTo(
-        (b['customer_name'] ?? '').toString().toLowerCase(),
-      ),
-    );
-
     Map<String, List<Map<String, dynamic>>> result = {};
     for (var item in items) {
-      String customerKey = item['customer_name'] ?? 'Unknown Customer';
+      String dateKey = _formatDate(DateTime.parse(item['created_at']));
 
-      if (!result.containsKey(customerKey)) {
-        result[customerKey] = [];
+      if (!result.containsKey(dateKey)) {
+        result[dateKey] = [];
       }
 
-      result[customerKey]!.add(item);
+      result[dateKey]!.add(item);
     }
 
     return result;
@@ -96,6 +87,11 @@ class _DuePageState extends State<DuePage> {
   String _formatDate(DateTime date) {
     // Convert to local date
     final localDate = date.toLocal();
+
+    // Check if date is today
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final itemDate = DateTime(localDate.year, localDate.month, localDate.day);
     String day =
         _useBengaliDigits
             ? BdTakaFormatter.numberToBengaliDigits(localDate.day)
@@ -111,7 +107,13 @@ class _DuePageState extends State<DuePage> {
             ? BdTakaFormatter.numberToBengaliDigits(localDate.year)
             : localDate.year.toString();
 
-    return "$day/$month/$year";
+    if (itemDate == today) {
+      return "আজ ($day/$month/$year)";
+    } else if (itemDate == today.subtract(const Duration(days: 1))) {
+      return "গতকাল ($day/$month/$year)";
+    } else {
+      return "$day/$month/$year";
+    }
   }
 
   // Calculate sum of due amounts for a list of items
@@ -143,7 +145,7 @@ class _DuePageState extends State<DuePage> {
       setState(() {
         dueItems = result;
         filteredItems = List.from(result);
-        groupedItems = _groupItemsByCustomer(result);
+        groupedItems = _groupItemsByDate(result);
         isLoading = false;
       });
     } catch (e) {
@@ -175,7 +177,6 @@ class _DuePageState extends State<DuePage> {
                       ),
                       child: TextField(
                         controller: _searchController,
-                        focusNode: _searchFocusNode,
                         decoration: const InputDecoration(
                           hintText: 'ক্রেতার নাম দিয়ে খুঁজুন',
                           prefixIcon: Icon(Icons.search),
@@ -188,7 +189,7 @@ class _DuePageState extends State<DuePage> {
                   const SizedBox(width: 10),
                   InkWell(
                     onTap: () {
-                      _searchFocusNode.requestFocus();
+                      // Implement filter functionality
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
@@ -225,20 +226,20 @@ class _DuePageState extends State<DuePage> {
                       : ListView.builder(
                         itemCount: groupedItems.keys.length,
                         itemBuilder: (context, groupIndex) {
-                          final customerName = groupedItems.keys.elementAt(
+                          final dateKey = groupedItems.keys.elementAt(
                             groupIndex,
                           );
-                          final customerItems = groupedItems[customerName]!;
-                          final totalDue = _calculateTotalDue(customerItems);
-                          final totalPaid = _calculateTotalPaid(customerItems);
+                          final dateItems = groupedItems[dateKey]!;
+                          final totalDue = _calculateTotalDue(dateItems);
+                          final totalPaid = _calculateTotalPaid(dateItems);
 
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Customer header with sum of due and paid amounts
+                              // Date header with sum of due and paid amounts
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 12.0,
+                                  horizontal: 16.0,
                                   vertical: 8.0,
                                 ),
                                 color: const Color.fromARGB(239, 222, 239, 245),
@@ -250,20 +251,16 @@ class _DuePageState extends State<DuePage> {
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Expanded(
-                                          child: Text(
-                                            customerName,
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16,
-                                            ),
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
+                                        Text(
+                                          dateKey,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
                                           ),
                                         ),
-                                        // Total items for this customer
+                                        // Total items for this date
                                         Text(
-                                          'মোট বিক্রয়: ${_useBengaliDigits ? BdTakaFormatter.numberToBengaliDigits(customerItems.length) : customerItems.length.toString()}',
+                                          'মোট: ${_useBengaliDigits ? BdTakaFormatter.numberToBengaliDigits(dateItems.length) : dateItems.length.toString()}',
                                           style: const TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 14,
@@ -276,7 +273,7 @@ class _DuePageState extends State<DuePage> {
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
-                                        // Sum of due for this customer
+                                        // Sum of due for this date
                                         Text(
                                           'মোট বাকি: ৳ ${BdTakaFormatter.format(totalDue, toBengaliDigits: _useBengaliDigits)}',
                                           style: const TextStyle(
@@ -290,7 +287,7 @@ class _DuePageState extends State<DuePage> {
                                             ),
                                           ),
                                         ),
-                                        // Sum of paid for this customer
+                                        // Sum of paid for this date
                                         Text(
                                           'মোট জমা: ৳ ${BdTakaFormatter.format(totalPaid, toBengaliDigits: _useBengaliDigits)}',
                                           style: const TextStyle(
@@ -314,7 +311,7 @@ class _DuePageState extends State<DuePage> {
                                 color: Colors.grey.shade100,
                                 child: Table(
                                   columnWidths: const {
-                                    0: FlexColumnWidth(5),
+                                    0: FlexColumnWidth(4),
                                     1: FlexColumnWidth(3),
                                     2: FlexColumnWidth(3),
                                   },
@@ -332,7 +329,7 @@ class _DuePageState extends State<DuePage> {
                                         Padding(
                                           padding: EdgeInsets.all(12.0),
                                           child: Text(
-                                            'তারিখ',
+                                            'নাম',
                                             style: TextStyle(
                                               fontWeight: FontWeight.bold,
                                             ),
@@ -364,8 +361,8 @@ class _DuePageState extends State<DuePage> {
                                 ),
                               ),
 
-                              // Items for this customer
-                              ...customerItems.asMap().entries.map((entry) {
+                              // Items for this date
+                              ...dateItems.asMap().entries.map((entry) {
                                 int index = entry.key;
                                 Map<String, dynamic> item = entry.value;
 
@@ -383,7 +380,7 @@ class _DuePageState extends State<DuePage> {
                                   ),
                                   child: Table(
                                     columnWidths: const {
-                                      0: FlexColumnWidth(5),
+                                      0: FlexColumnWidth(4),
                                       1: FlexColumnWidth(3),
                                       2: FlexColumnWidth(3),
                                     },
@@ -393,13 +390,7 @@ class _DuePageState extends State<DuePage> {
                                           Padding(
                                             padding: const EdgeInsets.all(12.0),
                                             child: Text(
-                                              item['created_at'] != null
-                                                  ? _formatDate(
-                                                    DateTime.parse(
-                                                      item['created_at'],
-                                                    ),
-                                                  )
-                                                  : 'N/A',
+                                              item['customer_name'] ?? '',
                                             ),
                                           ),
                                           Padding(

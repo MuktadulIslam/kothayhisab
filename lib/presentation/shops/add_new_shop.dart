@@ -18,13 +18,16 @@ class _ShopCreationScreenState extends State<ShopCreationScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final ShopsService _shopsService = ShopsService();
+  final _formKey = GlobalKey<FormState>(); // Add form key for validation
 
   bool _isLoading = false;
+  bool _isGPSLocationLoading = true;
+  bool _isGPSLocationAccessable = true;
+
   String? _errorMessage;
   String? _successMessage;
 
   Position? _currentPosition;
-  String? _currentAddress;
 
   @override
   void initState() {
@@ -41,8 +44,8 @@ class _ShopCreationScreenState extends State<ShopCreationScreen> {
 
   Future<void> _getCurrentLocation() async {
     setState(() {
-      _isLoading = true;
       _errorMessage = null;
+      _isGPSLocationLoading = true;
     });
 
     try {
@@ -51,11 +54,19 @@ class _ShopCreationScreenState extends State<ShopCreationScreen> {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
+          setState(() {
+            _isGPSLocationLoading = false;
+            _isGPSLocationAccessable = false;
+          });
           throw Exception('Location permissions are denied');
         }
       }
 
       if (permission == LocationPermission.deniedForever) {
+        setState(() {
+          _isGPSLocationLoading = false;
+          _isGPSLocationAccessable = false;
+        });
         throw Exception('Location permissions are permanently denied');
       }
 
@@ -66,58 +77,23 @@ class _ShopCreationScreenState extends State<ShopCreationScreen> {
 
       setState(() {
         _currentPosition = position;
+        _isGPSLocationLoading = false;
+        _isGPSLocationAccessable = true;
+        _errorMessage = null;
       });
-
-      // Get address from coordinates
-      await _getAddressFromLatLng(position);
     } catch (e) {
       setState(() {
         _errorMessage = 'Error getting location: ${e.toString()}';
-      });
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  Future<void> _getAddressFromLatLng(Position position) async {
-    try {
-      List<Placemark> placemarks = await placemarkFromCoordinates(
-        position.latitude,
-        position.longitude,
-      );
-
-      if (placemarks.isNotEmpty) {
-        Placemark place = placemarks[0];
-        String address =
-            '${place.street}, ${place.subLocality}, ${place.locality}, ${place.postalCode}';
-
-        setState(() {
-          _currentAddress = address;
-          _addressController.text = address;
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Error getting address: ${e.toString()}';
+        _isGPSLocationLoading = false;
+        _isGPSLocationAccessable = false;
       });
     }
   }
 
   Future<void> _saveShop() async {
-    if (_nameController.text.isEmpty) {
-      setState(() {
-        _errorMessage = 'Please enter shop name';
-      });
-      return;
-    }
-
-    if (_currentPosition == null) {
-      setState(() {
-        _errorMessage = 'Location data not available';
-      });
-      return;
+    // Validate the form
+    if (!_formKey.currentState!.validate()) {
+      return; // Stop if validation fails
     }
 
     setState(() {
@@ -128,11 +104,10 @@ class _ShopCreationScreenState extends State<ShopCreationScreen> {
 
     try {
       String gpsLocation =
-          '{latitude: ${_currentPosition!.latitude}, longitude: ${_currentPosition!.longitude}}';
-      String address =
-          _addressController.text.isNotEmpty
-              ? _addressController.text
-              : 'Unknown Address';
+          _currentPosition == null
+              ? ''
+              : '{latitude: ${_currentPosition!.latitude}, longitude: ${_currentPosition!.longitude}}';
+      String address = _addressController.text;
 
       // Create shop object
       Shop shop = Shop(
@@ -147,6 +122,7 @@ class _ShopCreationScreenState extends State<ShopCreationScreen> {
       if (result) {
         // Clear form after successful submission
         _nameController.clear();
+        _addressController.clear();
 
         // Show success dialog with Go to Home button
         showDialog(
@@ -177,7 +153,7 @@ class _ShopCreationScreenState extends State<ShopCreationScreen> {
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'Error creating shop: ${e.toString()}';
+        _errorMessage = 'দোকান তৈরি করতে সমস্যা হয়েছে: ${e.toString()}';
       });
     } finally {
       setState(() {
@@ -193,108 +169,160 @@ class _ShopCreationScreenState extends State<ShopCreationScreen> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Shop Name Input
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextField(
-                    controller: _nameController,
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.store, color: Colors.grey),
-                      labelText: 'দোকান নাম',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(4),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Shop Name Input
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.store, color: Colors.grey),
+                        labelText: 'দোকান নাম',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 12,
+                        ),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'দোকান নাম দিতে হবে';
+                        }
+                        return null;
+                      },
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
 
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-              // Address Input with Location Icon
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextField(
-                    controller: _addressController,
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(
-                        Icons.location_on,
-                        color: Colors.grey,
+                // Address Input with Location Icon
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextFormField(
+                      controller: _addressController,
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(
+                          Icons.location_on,
+                          color: Colors.grey,
+                        ),
+                        labelText: 'দোকান ঠিকানা',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 12,
+                        ),
                       ),
-                      labelText: 'দোকান ঠিকানা',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'দোকান ঠিকানা দিতে হবে';
+                        }
+                        return null;
+                      },
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
 
-              const SizedBox(height: 24),
+                const SizedBox(height: 24),
 
-              // Save Button
-              SizedBox(
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _saveShop,
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: const Color(0xFF0069A5),
-                    shape: RoundedRectangleBorder(
+                SizedBox(
+                  height: 48,
+                  child: Container(
+                    decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(4),
+                      color: const Color.fromARGB(255, 185, 224, 247),
+                    ),
+                    child: Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (_isGPSLocationLoading)
+                            const Padding(
+                              padding: EdgeInsets.only(right: 10.0),
+                              child: SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.0,
+                                  color: Colors.blue,
+                                ),
+                              ),
+                            ),
+                          Text(
+                            _isGPSLocationLoading
+                                ? 'আপনার জিপিএস লোকেশান নেওয়া হচ্ছে....'
+                                : _isGPSLocationAccessable
+                                ? 'আপনার জিপিএস লোকেশান পাওয়া গেছে!'
+                                : 'আপনার অবস্থান পাওয়া যায়নি',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  child:
-                      _isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text(
-                            'সেভ করুন',
-                            style: TextStyle(fontSize: 16),
-                          ),
                 ),
-              ),
+                const SizedBox(height: 24),
 
-              const SizedBox(height: 16),
-
-              // Error message
-              if (_errorMessage != null)
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  color: Colors.red[100],
-                  child: Text(
-                    _errorMessage!,
-                    style: const TextStyle(color: Colors.red),
+                // Save Button
+                SizedBox(
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _saveShop,
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: const Color(0xFF0069A5),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    child:
+                        _isLoading
+                            ? const CircularProgressIndicator(
+                              color: Colors.white,
+                            )
+                            : const Text(
+                              'সেভ করুন',
+                              style: TextStyle(fontSize: 16),
+                            ),
                   ),
                 ),
 
-              // Success message
-              if (_successMessage != null)
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  color: Colors.green[100],
-                  child: Text(
-                    _successMessage!,
-                    style: const TextStyle(color: Colors.green),
-                  ),
-                ),
+                const SizedBox(height: 16),
 
-              // Location info
-              // if (_currentPosition != null)
-              //   Padding(
-              //     padding: const EdgeInsets.only(top: 16.0),
-              //     child: Text(
-              //       'GPS: ${_currentPosition!.latitude}, ${_currentPosition!.longitude}',
-              //       style: const TextStyle(fontSize: 12, color: Colors.grey),
-              //     ),
-              //   ),
-            ],
+                // Error message
+                if (_errorMessage != null)
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    color: Colors.red[100],
+                    child: Text(
+                      _errorMessage!,
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  ),
+
+                // Success message
+                if (_successMessage != null)
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    color: Colors.green[100],
+                    child: Text(
+                      _successMessage!,
+                      style: const TextStyle(color: Colors.green),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),

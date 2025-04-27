@@ -39,14 +39,18 @@ class StoreCard extends StatelessWidget {
               ),
               const SizedBox(width: 16),
               // Store text
-              Text(
-                shop.name, // "Root Store" in Bengali
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+              Expanded(
+                child: Text(
+                  shop.name, // "Root Store" in Bengali
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
                 ),
               ),
-              const Spacer(),
+              const SizedBox(width: 16),
               // Button
               Container(
                 decoration: BoxDecoration(
@@ -73,12 +77,17 @@ class StoreCard extends StatelessWidget {
           const SizedBox(height: 16),
           // Location info
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Icon(Icons.location_on, color: Colors.grey, size: 18),
               const SizedBox(width: 8),
-              Text(
-                shop.address, // "Dhaka, Root City" in Bengali
-                style: const TextStyle(color: Colors.grey, fontSize: 14),
+              Expanded(
+                child: Text(
+                  shop.address,
+                  style: const TextStyle(color: Colors.grey, fontSize: 14),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
               ),
             ],
           ),

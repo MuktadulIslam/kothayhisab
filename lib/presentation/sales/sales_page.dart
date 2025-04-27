@@ -19,6 +19,7 @@ class _SalesPageState extends State<SalesPage> {
   List<SalesItem> salesItems = [];
   String errorMessage = '';
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
   List<SalesItem> filteredItems = [];
   Map<String, List<SalesItem>> groupedItems = {};
 
@@ -40,6 +41,7 @@ class _SalesPageState extends State<SalesPage> {
   @override
   void dispose() {
     _searchController.dispose();
+    _searchFocusNode.dispose();
     super.dispose();
   }
 
@@ -92,28 +94,26 @@ class _SalesPageState extends State<SalesPage> {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final itemDate = DateTime(localDate.year, localDate.month, localDate.day);
+    String day =
+        _useBengaliDigits
+            ? BdTakaFormatter.numberToBengaliDigits(localDate.day)
+            : localDate.day.toString();
+
+    String month =
+        _useBengaliDigits
+            ? BdTakaFormatter.numberToBengaliDigits(localDate.month)
+            : localDate.month.toString();
+
+    String year =
+        _useBengaliDigits
+            ? BdTakaFormatter.numberToBengaliDigits(localDate.year)
+            : localDate.year.toString();
 
     if (itemDate == today) {
-      return "আজ";
+      return "আজ ($day/$month/$year)";
     } else if (itemDate == today.subtract(const Duration(days: 1))) {
-      return "গতকাল";
+      return "গতকাল ($day/$month/$year)";
     } else {
-      // Format date in Bengali
-      String day =
-          _useBengaliDigits
-              ? BdTakaFormatter.numberToBengaliDigits(localDate.day)
-              : localDate.day.toString();
-
-      String month =
-          _useBengaliDigits
-              ? BdTakaFormatter.numberToBengaliDigits(localDate.month)
-              : localDate.month.toString();
-
-      String year =
-          _useBengaliDigits
-              ? BdTakaFormatter.numberToBengaliDigits(localDate.year)
-              : localDate.year.toString();
-
       return "$day/$month/$year";
     }
   }
@@ -150,249 +150,255 @@ class _SalesPageState extends State<SalesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar('বিক্রয় তালিকা'),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(5),
-                      border: Border.all(color: Colors.grey.shade300),
-                    ),
-                    child: TextField(
-                      controller: _searchController,
-                      decoration: const InputDecoration(
-                        hintText: 'Search',
-                        prefixIcon: Icon(Icons.search),
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(vertical: 12),
+      appBar: CustomAppBar('বিক্রয় তালিকা'),
+      body: RefreshIndicator(
+        onRefresh: fetchSalesData,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(5),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child: TextField(
+                        controller: _searchController,
+                        focusNode: _searchFocusNode,
+                        decoration: const InputDecoration(
+                          hintText: 'Search',
+                          prefixIcon: Icon(Icons.search),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(vertical: 12),
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 10),
-                InkWell(
-                  onTap: () {
-                    // Implement filter functionality
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF01579B),
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: Row(
-                      children: const [
-                        Icon(Icons.filter_list, color: Colors.white),
-                        SizedBox(width: 5),
-                        Text('ফিল্টার', style: TextStyle(color: Colors.white)),
-                      ],
+                  const SizedBox(width: 10),
+                  InkWell(
+                    onTap: () {
+                      // Set focus to search field when filter is tapped
+                      _searchFocusNode.requestFocus();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF01579B),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Row(
+                        children: const [
+                          Icon(Icons.filter_list, color: Colors.white),
+                          SizedBox(width: 5),
+                          Text(
+                            'ফিল্টার',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Container(
-            color: Colors.grey.shade100,
-            child: Table(
-              columnWidths: const {
-                0: FlexColumnWidth(3),
-                1: FlexColumnWidth(2),
-                2: FlexColumnWidth(2),
-              },
-              children: [
-                TableRow(
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
-                    border: Border(
-                      bottom: BorderSide(color: Colors.grey.shade300),
+            Container(
+              color: Colors.grey.shade100,
+              child: Table(
+                columnWidths: const {
+                  0: FlexColumnWidth(3),
+                  1: FlexColumnWidth(2),
+                  2: FlexColumnWidth(2),
+                },
+                children: [
+                  TableRow(
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      border: Border(
+                        bottom: BorderSide(color: Colors.grey.shade300),
+                      ),
                     ),
+                    children: const [
+                      Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: Text(
+                          'নাম',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: Text(
+                          'পরিমাণ',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: Text(
+                          'মূল্য',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.right,
+                        ),
+                      ),
+                    ],
                   ),
-                  children: const [
-                    Padding(
-                      padding: EdgeInsets.all(12.0),
-                      child: Text(
-                        'নাম',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(12.0),
-                      child: Text(
-                        'পরিমাণ',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(12.0),
-                      child: Text(
-                        'মূল্য',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.right,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Expanded(
-            child:
-                isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : errorMessage.isNotEmpty
-                    ? Center(child: Text(errorMessage))
-                    : filteredItems.isEmpty
-                    ? const Center(child: Text('কোন আইটেম পাওয়া যায়নি'))
-                    : ListView.builder(
-                      itemCount: groupedItems.keys.length,
-                      itemBuilder: (context, groupIndex) {
-                        final dateKey = groupedItems.keys.elementAt(groupIndex);
-                        final dateItems = groupedItems[dateKey]!;
-                        final totalPrice = _calculateTotalPrice(dateItems);
+            Expanded(
+              child:
+                  isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : errorMessage.isNotEmpty
+                      ? Center(child: Text(errorMessage))
+                      : filteredItems.isEmpty
+                      ? const Center(child: Text('কোন আইটেম পাওয়া যায়নি'))
+                      : ListView.builder(
+                        itemCount: groupedItems.keys.length,
+                        itemBuilder: (context, groupIndex) {
+                          final dateKey = groupedItems.keys.elementAt(
+                            groupIndex,
+                          );
+                          final dateItems = groupedItems[dateKey]!;
+                          final totalPrice = _calculateTotalPrice(dateItems);
 
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Date header with sum of prices
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16.0,
-                                vertical: 8.0,
-                              ),
-                              color: Colors.grey.shade200,
-                              width: double.infinity,
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    dateKey,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                  // Sum of prices for this date
-                                  Text(
-                                    'মোট: ${dateItems.first.currency} ${BdTakaFormatter.format(totalPrice, toBengaliDigits: _useBengaliDigits)}',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            // Items for this date
-                            ...dateItems.asMap().entries.map((entry) {
-                              int index = entry.key;
-                              SalesItem item = entry.value;
-
-                              return Container(
-                                decoration: BoxDecoration(
-                                  color:
-                                      index % 2 == 0
-                                          ? Colors.white
-                                          : Colors.grey.shade100,
-                                  border: Border(
-                                    bottom: BorderSide(
-                                      color: Colors.grey.shade300,
-                                    ),
-                                  ),
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Date header with sum of prices
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0,
+                                  vertical: 8.0,
                                 ),
-                                child: Table(
-                                  columnWidths: const {
-                                    0: FlexColumnWidth(3),
-                                    1: FlexColumnWidth(2),
-                                    2: FlexColumnWidth(2),
-                                  },
+                                color: Colors.grey.shade200,
+                                width: double.infinity,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
-                                    TableRow(
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.all(12.0),
-                                          child: Text(item.name),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.all(12.0),
-                                          child: RichText(
-                                            text: TextSpan(
-                                              style:
-                                                  DefaultTextStyle.of(
-                                                    context,
-                                                  ).style,
-                                              children: [
-                                                TextSpan(
-                                                  text:
-                                                      _useBengaliDigits
-                                                          ? BdTakaFormatter.numberToBengaliDigits(
-                                                            item.quantity,
-                                                          )
-                                                          : item.quantity
-                                                              .toString(),
-                                                ),
-                                                if (item
-                                                    .quantityDescription
-                                                    .isNotEmpty)
-                                                  TextSpan(
-                                                    text:
-                                                        ' ${item.quantityDescription}',
-                                                  ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.all(12.0),
-                                          child: RichText(
-                                            textAlign: TextAlign.right,
-                                            text: TextSpan(
-                                              style:
-                                                  DefaultTextStyle.of(
-                                                    context,
-                                                  ).style,
-                                              children: [
-                                                TextSpan(text: item.currency),
-                                                const TextSpan(text: ' '),
-                                                TextSpan(
-                                                  text: BdTakaFormatter.format(
-                                                    item.price,
-                                                    toBengaliDigits:
-                                                        _useBengaliDigits,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ],
+                                    Text(
+                                      dateKey,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    // Sum of prices for this date
+                                    Text(
+                                      'মোট: ${dateItems.first.currency} ${BdTakaFormatter.format(totalPrice, toBengaliDigits: _useBengaliDigits)}',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
                                     ),
                                   ],
                                 ),
-                              );
-                            }).toList(),
-                          ],
-                        );
-                      },
-                    ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: fetchSalesData,
-        backgroundColor: const Color(0xFF01579B),
-        child: const Icon(Icons.refresh),
+                              ),
+
+                              // Items for this date
+                              ...dateItems.asMap().entries.map((entry) {
+                                int index = entry.key;
+                                SalesItem item = entry.value;
+
+                                return Container(
+                                  decoration: BoxDecoration(
+                                    color:
+                                        index % 2 == 0
+                                            ? Colors.white
+                                            : Colors.grey.shade100,
+                                    border: Border(
+                                      bottom: BorderSide(
+                                        color: Colors.grey.shade300,
+                                      ),
+                                    ),
+                                  ),
+                                  child: Table(
+                                    columnWidths: const {
+                                      0: FlexColumnWidth(3),
+                                      1: FlexColumnWidth(2),
+                                      2: FlexColumnWidth(2),
+                                    },
+                                    children: [
+                                      TableRow(
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.all(12.0),
+                                            child: Text(item.name),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.all(12.0),
+                                            child: RichText(
+                                              text: TextSpan(
+                                                style:
+                                                    DefaultTextStyle.of(
+                                                      context,
+                                                    ).style,
+                                                children: [
+                                                  TextSpan(
+                                                    text:
+                                                        _useBengaliDigits
+                                                            ? BdTakaFormatter.numberToBengaliDigits(
+                                                              item.quantity,
+                                                            )
+                                                            : item.quantity
+                                                                .toString(),
+                                                  ),
+                                                  if (item
+                                                      .quantityDescription
+                                                      .isNotEmpty)
+                                                    TextSpan(
+                                                      text:
+                                                          ' ${item.quantityDescription}',
+                                                    ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.all(12.0),
+                                            child: RichText(
+                                              textAlign: TextAlign.right,
+                                              text: TextSpan(
+                                                style:
+                                                    DefaultTextStyle.of(
+                                                      context,
+                                                    ).style,
+                                                children: [
+                                                  TextSpan(text: item.currency),
+                                                  const TextSpan(text: ' '),
+                                                  TextSpan(
+                                                    text:
+                                                        BdTakaFormatter.format(
+                                                          item.price,
+                                                          toBengaliDigits:
+                                                              _useBengaliDigits,
+                                                        ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                            ],
+                          );
+                        },
+                      ),
+            ),
+          ],
+        ),
       ),
       bottomNavigationBar: CustomBottomAppBar(),
     );

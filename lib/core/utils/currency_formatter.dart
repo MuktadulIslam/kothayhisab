@@ -22,7 +22,7 @@ class BdTakaFormatter {
   /// 10000000.00 -> 1,00,00,000.00
   static String format(
     double amount, {
-    int decimalPlaces = 2,
+    int decimalPlaces = 0,
     bool toBengaliDigits = false,
   }) {
     // Convert to fixed decimal places
