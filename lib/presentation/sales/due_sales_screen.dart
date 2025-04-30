@@ -3,6 +3,7 @@ import 'package:kothayhisab/data/api/services/sales_service.dart';
 import 'package:kothayhisab/presentation/common_widgets/app_bar.dart';
 import 'package:kothayhisab/presentation/common_widgets/custom_bottom_app_bar.dart';
 import 'package:kothayhisab/core/utils/currency_formatter.dart';
+import 'package:kothayhisab/presentation/sales/due_details_popup.dart';
 
 class DuePage extends StatefulWidget {
   final String shopId;
@@ -22,7 +23,7 @@ class _DuePageState extends State<DuePage> {
   Map<String, List<Map<String, dynamic>>> groupedItems = {};
 
   // Control whether to use Bengali digits
-  bool _useBengaliDigits = true;
+  final bool _useBengaliDigits = true;
 
   final SalesService _salesService = SalesService();
 
@@ -93,9 +94,10 @@ class _DuePageState extends State<DuePage> {
   }
 
   // Format date for display
-  String _formatDate(DateTime date) {
+  String _formatDate(String date) {
+    DateTime dateTime = DateTime.parse(date);
     // Convert to local date
-    final localDate = date.toLocal();
+    final localDate = dateTime.toLocal();
     String day =
         _useBengaliDigits
             ? BdTakaFormatter.numberToBengaliDigits(localDate.day)
@@ -152,6 +154,29 @@ class _DuePageState extends State<DuePage> {
         isLoading = false;
       });
     }
+  }
+
+  // Function to show the bottom sheet when a row is tapped
+  void _showDueDetailsBottomSheet(
+    BuildContext context,
+    Map<String, dynamic> item,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // This allows the sheet to take up more space
+      backgroundColor: Colors.transparent, // Make the background transparent
+      builder: (BuildContext context) {
+        return GestureDetector(
+          onTap: () {}, // This prevents taps inside the sheet from closing it
+          child: DismissibleBottomSheet(
+            child: DueDetailsBottomSheet(
+              dueItem: item,
+              useBengaliDigits: _useBengaliDigits,
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -263,7 +288,7 @@ class _DuePageState extends State<DuePage> {
                                         ),
                                         // Total items for this customer
                                         Text(
-                                          'মোট বিক্রয়: ${_useBengaliDigits ? BdTakaFormatter.numberToBengaliDigits(customerItems.length) : customerItems.length.toString()}',
+                                          'মোট বিক্রয়: ${_useBengaliDigits ? BdTakaFormatter.numberToBengaliDigits(customerItems.length) : customerItems.length.toString()}',
                                           style: const TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 14,
@@ -369,56 +394,66 @@ class _DuePageState extends State<DuePage> {
                                 int index = entry.key;
                                 Map<String, dynamic> item = entry.value;
 
-                                return Container(
-                                  decoration: BoxDecoration(
-                                    color:
-                                        index % 2 == 0
-                                            ? Colors.white
-                                            : Colors.grey.shade100,
-                                    border: Border(
-                                      bottom: BorderSide(
-                                        color: Colors.grey.shade300,
+                                return InkWell(
+                                  onTap: () {
+                                    // Open bottom sheet when a row is tapped
+                                    _showDueDetailsBottomSheet(context, item);
+                                  },
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color:
+                                          index % 2 == 0
+                                              ? Colors.white
+                                              : Colors.grey.shade100,
+                                      border: Border(
+                                        bottom: BorderSide(
+                                          color: Colors.grey.shade300,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  child: Table(
-                                    columnWidths: const {
-                                      0: FlexColumnWidth(5),
-                                      1: FlexColumnWidth(3),
-                                      2: FlexColumnWidth(3),
-                                    },
-                                    children: [
-                                      TableRow(
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.all(12.0),
-                                            child: Text(
-                                              item['created_at'] != null
-                                                  ? _formatDate(
-                                                    DateTime.parse(
+                                    child: Table(
+                                      columnWidths: const {
+                                        0: FlexColumnWidth(5),
+                                        1: FlexColumnWidth(3),
+                                        2: FlexColumnWidth(3),
+                                      },
+                                      children: [
+                                        TableRow(
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.all(
+                                                12.0,
+                                              ),
+                                              child: Text(
+                                                item['created_at'] != null
+                                                    ? _formatDate(
                                                       item['created_at'],
-                                                    ),
-                                                  )
-                                                  : 'N/A',
+                                                    )
+                                                    : 'N/A',
+                                              ),
                                             ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(12.0),
-                                            child: Text(
-                                              '৳ ${BdTakaFormatter.format(item['due_amount'] ?? 0.0, toBengaliDigits: _useBengaliDigits)}',
-                                              textAlign: TextAlign.right,
+                                            Padding(
+                                              padding: const EdgeInsets.all(
+                                                12.0,
+                                              ),
+                                              child: Text(
+                                                '৳ ${BdTakaFormatter.format(item['due_amount'] ?? 0.0, toBengaliDigits: _useBengaliDigits)}',
+                                                textAlign: TextAlign.right,
+                                              ),
                                             ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(12.0),
-                                            child: Text(
-                                              '৳ ${BdTakaFormatter.format(item['paid_amount'] ?? 0.0, toBengaliDigits: _useBengaliDigits)}',
-                                              textAlign: TextAlign.right,
+                                            Padding(
+                                              padding: const EdgeInsets.all(
+                                                12.0,
+                                              ),
+                                              child: Text(
+                                                '৳ ${BdTakaFormatter.format(item['paid_amount'] ?? 0.0, toBengaliDigits: _useBengaliDigits)}',
+                                                textAlign: TextAlign.right,
+                                              ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 );
                               }).toList(),
@@ -431,6 +466,62 @@ class _DuePageState extends State<DuePage> {
         ),
       ),
       bottomNavigationBar: CustomBottomAppBar(),
+    );
+  }
+}
+
+// Custom Bottom Sheet that can be dismissed by tapping outside
+class DismissibleBottomSheet extends StatelessWidget {
+  final Widget child;
+
+  const DismissibleBottomSheet({Key? key, required this.child})
+    : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height:
+          MediaQuery.of(context).size.height *
+          0.8, // Takes up 4/5 of the screen height
+      width: double.infinity,
+      decoration: const BoxDecoration(color: Colors.transparent),
+      child: Stack(
+        children: [
+          // This invisible container covers the entire screen and closes the bottom sheet when tapped
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: Container(color: Colors.transparent),
+            ),
+          ),
+          // The actual bottom sheet content
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height:
+                  MediaQuery.of(context).size.height *
+                  0.8, // Takes up 4/5 of the screen height
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 10,
+                    offset: Offset(0, -5),
+                  ),
+                ],
+              ),
+              child: child,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

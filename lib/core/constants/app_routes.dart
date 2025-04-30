@@ -26,9 +26,12 @@ class AppRoutes {
 
   static const String shopDetailsPage = '/shop-details/:id';
   static const String addShopPage = '/add-shop';
+  static const String updateShopPage = '/update-shop';
+  static const String seeEmployeePage = '/see-employee';
+  static const String addEmployeePage = '/add-employee';
 
-  static const String addEmployeePage = '/shop-details/:id/add_employee';
-  static const String deleteEmployeePage = '/shop-details/:id/see_employee';
+  // static const String addEmployeePage = '/shop-details/:id/add_employee';
+  // static const String deleteEmployeePage = '/shop-details/:id/see_employee';
 
   static const String addInventory = '/shop-details/:id/add_inventory';
   static const String seeInventory = '/shop-details/:id/see_inventory';

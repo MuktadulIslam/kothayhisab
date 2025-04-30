@@ -7,6 +7,40 @@ import 'package:kothayhisab/data/models/shop_model.dart';
 
 class ShopsService {
   // Create a new shop
+  Future<bool> updateShop(Shop shop) async {
+    try {
+      // Get token from auth service
+      final token = await AuthService.getToken();
+
+      if (token == null) {
+        throw Exception('No authentication token found');
+      }
+
+      // Initial request
+      final response = await http.put(
+        Uri.parse('${App.backendUrl}/shops/${shop.id}'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token,
+          'Accept-Charset': 'utf-8',
+        },
+        body: jsonEncode(shop.toJson()),
+      );
+
+      if (response.statusCode == 200 ||
+          response.statusCode == 201 ||
+          response.statusCode == 204) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      print('Error creating shop: $e');
+      throw Exception('Error creating shop: $e');
+    }
+  }
+
+  // Create a new shop
   Future<bool> createShop(Shop shop) async {
     try {
       // Get token from auth service

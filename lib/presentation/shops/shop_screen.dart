@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kothayhisab/data/models/shop_model.dart';
 import 'package:kothayhisab/presentation/common_widgets/app_bar.dart';
 import 'package:kothayhisab/presentation/common_widgets/custom_bottom_app_bar.dart';
-import 'package:kothayhisab/presentation/common_widgets/store_card.dart';
+import 'package:kothayhisab/presentation/shops/store_card.dart';
 
 class MenuItem {
   final String title;
@@ -48,7 +48,7 @@ class ShopScreen extends StatelessWidget {
         iconColor: Colors.green,
       ),
       MenuItem(
-        title: 'বিক্রয় করুন', // "Products" in Bengali
+        title: 'বিক্রয় করুন', // "Products" in Bengali
         routePath: '/shop-details/add_sales',
         icon: Icons.add_business_sharp,
         backgroundColor: const Color.fromARGB(
@@ -60,16 +60,22 @@ class ShopScreen extends StatelessWidget {
         iconColor: const Color(0xFF0C5D8F),
       ),
       MenuItem(
-        title: 'বিক্রয় দেখুন', // "Sales" in Bengali
+        title: 'বিক্রয় দেখুন', // "Sales" in Bengali
         routePath: '/shop-details/see_sales',
         icon: Icons.open_with,
         backgroundColor: const Color(0xFFE6F9E6),
         iconColor: Colors.green,
       ),
-
       MenuItem(
         title: 'বাকির হিসাব', // "Accounts" in Bengali
         routePath: '/shop-details/see_dues',
+        icon: Icons.account_balance_wallet_outlined,
+        backgroundColor: const Color.fromARGB(255, 217, 219, 227),
+        iconColor: Colors.indigo,
+      ),
+      MenuItem(
+        title: 'বাকির খাতা', // "Accounts" in Bengali
+        routePath: '/shop-details/see-due-accounts',
         icon: Icons.account_balance_wallet_outlined,
         backgroundColor: const Color.fromARGB(255, 217, 219, 227),
         iconColor: Colors.indigo,
@@ -86,17 +92,18 @@ class ShopScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
       appBar: CustomAppBar(shop.name), // "Root Store" in Bengali
-      body: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Store Card
-            StoreCard(shop: shop),
-            const SizedBox(height: 24),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Store Card
+          StoreCard(shop: shop),
+          const SizedBox(height: 24),
 
-            // Grid Menu
-            Expanded(
+          // Grid Menu - FIXED: Removed Expanded and made GridView work within Column
+          Expanded(
+            // This Expanded is now a direct child of Column (a Flex widget)
+            child: Padding(
+              padding: const EdgeInsets.all(10.0),
               child: GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2, // Two columns
@@ -113,8 +120,8 @@ class ShopScreen extends StatelessWidget {
                 },
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
       bottomNavigationBar: CustomBottomAppBar(),
     );
@@ -123,7 +130,7 @@ class ShopScreen extends StatelessWidget {
 
 class MenuItemCard extends StatelessWidget {
   final MenuItem menuItem;
-  final String shopId; // Optional shop ID parameter
+  final String shopId;
 
   const MenuItemCard({super.key, required this.menuItem, required this.shopId});
 
@@ -140,7 +147,7 @@ class MenuItemCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: menuItem.backgroundColor,
-          borderRadius: BorderRadius.circular(8.0),
+          borderRadius: BorderRadius.circular(10.0),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.05),
@@ -151,6 +158,8 @@ class MenuItemCard extends StatelessWidget {
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment:
+              CrossAxisAlignment.center, // Center items horizontally
           children: [
             Container(
               width: 50,
@@ -161,7 +170,7 @@ class MenuItemCard extends StatelessWidget {
               ),
               child: Icon(menuItem.icon, color: menuItem.iconColor, size: 28),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 5),
             Text(
               menuItem.title,
               textAlign: TextAlign.center,
