@@ -49,7 +49,7 @@ class InventoryService {
       }
 
       final response = await http.get(
-        Uri.parse('${App.backendUrl}/inventory?shop_id=$shopId'),
+        Uri.parse('${App.apiUrl}/inventory?shop_id=$shopId'),
         headers: {'Authorization': token, 'Accept-Charset': 'utf-8'},
       );
 
@@ -106,7 +106,7 @@ class InventoryService {
       }
 
       final response = await http.post(
-        Uri.parse('${App.backendUrl}/inventory/parse'),
+        Uri.parse('${App.apiUrl}/inventory/parse'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token,
@@ -179,7 +179,7 @@ class InventoryService {
       };
 
       final response = await http.post(
-        Uri.parse('${App.backendUrl}/inventory/confirm?shop_id=$shopId'),
+        Uri.parse('${App.apiUrl}/inventory/confirm?shop_id=$shopId'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token,

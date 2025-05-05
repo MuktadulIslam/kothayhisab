@@ -26,33 +26,35 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     // Check if user is authenticated
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      AuthMiddleware.checkAuth(context);
-      _loadShops(); // Load shops when screen initializes
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   AuthMiddleware.checkAuth(context);
+    //   // _loadShops(); // Load shops when screen initializes
+    // });
+    AuthMiddleware.checkAuth(context);
+    _loadShops();
   }
 
   // Load shops data from API
   Future<void> _loadShops() async {
-    setState(() {
-      _isLoadingShops = true;
-      _errorMessage = null;
-    });
+    // setState(() {
+    //   _isLoadingShops = true;
+    //   _errorMessage = null;
+    // });
 
     try {
       final shopsList = await _shopsService.getShops();
-      setState(() {
-        shops = shopsList;
-      });
+      // setState(() {
+      //   shops = shopsList;
+      // });
     } catch (e) {
-      setState(() {
-        _errorMessage = 'Error loading shops: ${e.toString()}';
-        print(_errorMessage);
-      });
+      // setState(() {
+      //   _errorMessage = 'Error loading shops: ${e.toString()}';
+      //   print(_errorMessage);
+      // });
     } finally {
-      setState(() {
-        _isLoadingShops = false;
-      });
+      // setState(() {
+      //   _isLoadingShops = false;
+      // });
     }
   }
 
@@ -144,7 +146,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       : shops.isEmpty
                       ? const Center(
                         child: Text(
-                          'কোন দোকান নেই',
+                          'কোন দোকান যোগ করা হয়নি!',
                           style: TextStyle(
                             fontSize: 20,
                             color: Color.fromARGB(255, 139, 133, 133),
@@ -170,21 +172,28 @@ class _HomeScreenState extends State<HomeScreen> {
                                 vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: const Color(
+                                  0xFFF2F8FF,
+                                ), // Changed from Colors.white to #f2f8ff
                                 borderRadius: BorderRadius.circular(8),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.grey.withOpacity(0.1),
-                                    spreadRadius: 1,
+                                    color: const Color.fromARGB(
+                                      255,
+                                      23,
+                                      22,
+                                      22,
+                                    ).withOpacity(0.1),
+                                    spreadRadius: 3,
                                     blurRadius: 2,
-                                    offset: const Offset(0, 1),
+                                    offset: const Offset(2, 2),
                                   ),
                                 ],
                               ),
                               child: ListTile(
                                 contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 16,
-                                  vertical: 4,
+                                  vertical: 2,
                                 ),
                                 title: Text(
                                   shop.name,
@@ -197,23 +206,22 @@ class _HomeScreenState extends State<HomeScreen> {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 subtitle: Padding(
-                                  padding: const EdgeInsets.only(top: 4.0),
+                                  padding: const EdgeInsets.only(top: 2.0),
                                   child: Row(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
                                       const Icon(
                                         Icons.location_on,
-                                        size: 14,
+                                        size: 16,
                                         color: Colors.black54,
                                       ),
-                                      const SizedBox(width: 4),
                                       Expanded(
                                         child: Text.rich(
                                           TextSpan(
                                             children: [
                                               TextSpan(
-                                                text: 'লোকেশান: ',
+                                                text: 'ঠিকানাঃ ',
                                                 style: TextStyle(
                                                   color: Colors.grey[700],
                                                   fontSize: 12,
@@ -223,7 +231,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               TextSpan(
                                                 text: shop.address,
                                                 style: TextStyle(
-                                                  color: Colors.grey[700],
+                                                  color: Colors.black,
                                                   fontSize: 12,
                                                 ),
                                               ),

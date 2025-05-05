@@ -48,7 +48,7 @@ class SalesService {
       }
 
       final response = await http.get(
-        Uri.parse('${App.backendUrl}/sales?shop_id=$shopId'),
+        Uri.parse('${App.apiUrl}/sales?shop_id=$shopId'),
         headers: {'Authorization': token, 'Accept-Charset': 'utf-8'},
       );
 
@@ -105,7 +105,7 @@ class SalesService {
       }
 
       final response = await http.post(
-        Uri.parse('${App.backendUrl}/sales/parse'),
+        Uri.parse('${App.apiUrl}/sales/parse'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token,
@@ -178,7 +178,7 @@ class SalesService {
       };
 
       final response = await http.post(
-        Uri.parse('${App.backendUrl}/sales/confirm?shop_id=$shopId'),
+        Uri.parse('${App.apiUrl}/sales/confirm?shop_id=$shopId'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token,
@@ -225,7 +225,7 @@ class SalesService {
       }
 
       final response = await http.post(
-        Uri.parse('${App.backendUrl}/due/parse'),
+        Uri.parse('${App.apiUrl}/due/parse'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token,
@@ -291,7 +291,7 @@ class SalesService {
       }
 
       final saleResponse = await http.post(
-        Uri.parse('${App.backendUrl}/sales/confirm?shop_id=$shopId'),
+        Uri.parse('${App.apiUrl}/sales/confirm?shop_id=$shopId'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token,
@@ -304,7 +304,7 @@ class SalesService {
       );
 
       final duesResponse = await http.post(
-        Uri.parse('${App.backendUrl}/due/confirm'),
+        Uri.parse('${App.apiUrl}/due/confirm'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token,
@@ -346,7 +346,7 @@ class SalesService {
       }
 
       final response = await http.get(
-        Uri.parse('${App.backendUrl}/due/shops/$shopId?skip=0&limit=100'),
+        Uri.parse('${App.apiUrl}/due/shops/$shopId?skip=0&limit=100'),
         headers: {'Authorization': token, 'Accept-Charset': 'utf-8'},
       );
 

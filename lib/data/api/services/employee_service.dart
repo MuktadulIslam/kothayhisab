@@ -21,7 +21,7 @@ class EmployeeService {
       }
 
       final response = await http.get(
-        Uri.parse('${App.backendUrl}/shops/$shopId/employees'),
+        Uri.parse('${App.apiUrl}/shops/$shopId/employees'),
         headers: {'Authorization': token, 'Content-Type': 'application/json'},
       );
 
@@ -88,7 +88,7 @@ class EmployeeService {
       };
 
       final response = await http.post(
-        Uri.parse('${App.backendUrl}/shops/$shopId/employees'),
+        Uri.parse('${App.apiUrl}/shops/$shopId/employees'),
         headers: {'Authorization': token, 'Content-Type': 'application/json'},
         body: jsonEncode(requestBody),
       );
@@ -153,7 +153,7 @@ class EmployeeService {
       }
 
       // Ensure we're using the correct URL format
-      final url = '${App.backendUrl}/shops/$shopId/employees/$employeeId';
+      final url = '${App.apiUrl}/shops/$shopId/employees/$employeeId';
       print('Making DELETE request to: $url');
 
       final response = await http.delete(

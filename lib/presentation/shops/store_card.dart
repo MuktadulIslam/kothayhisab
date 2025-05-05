@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:kothayhisab/core/constants/app_routes.dart';
 import 'package:kothayhisab/data/models/shop_model.dart';
 
 class StoreCard extends StatelessWidget {
