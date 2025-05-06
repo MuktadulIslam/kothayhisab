@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kothayhisab/core/constants/app_routes.dart';
 import 'package:kothayhisab/data/api/services/auth_service.dart';
 import 'package:kothayhisab/config/app_config.dart';
+import 'package:kothayhisab/data/api/services/shops_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -26,6 +27,8 @@ class _SplashScreenState extends State<SplashScreen> {
 
     if (mounted) {
       if (isAuthenticated) {
+        final ShopsService shopsService = ShopsService();
+        await shopsService.getShops();
         Navigator.of(context).pushReplacementNamed(AppRoutes.homePage);
       } else {
         Navigator.of(context).pushReplacementNamed(AppRoutes.loginPage);

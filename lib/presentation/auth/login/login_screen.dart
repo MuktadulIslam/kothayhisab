@@ -49,23 +49,13 @@ class _LoginScreenState extends State<LoginScreen> {
           Navigator.of(context).pushReplacementNamed(AppRoutes.homePage);
         } else {
           ToastNotification.error(
-            // ignore: use_build_context_synchronously
-            context,
             'অ্যাপে একটি অপ্রত্যাশিত ত্রুটি ঘটেছে। দয়া করে আবার লগইন করুন।',
           );
         }
       } else if (response['status_code'] == 401) {
-        ToastNotification.error(
-          // ignore: use_build_context_synchronously
-          context,
-          'ফোন নম্বর অথবা পাসওয়ার্ড সঠিক নয়',
-        );
+        ToastNotification.error('ফোন নম্বর অথবা পাসওয়ার্ড সঠিক নয়');
       } else {
-        ToastNotification.error(
-          // ignore: use_build_context_synchronously
-          context,
-          'একটি অপ্রত্যাশিত ত্রুটি ঘটেছে',
-        );
+        ToastNotification.error('একটি অপ্রত্যাশিত ত্রুটি ঘটেছে');
       }
     }
   }
@@ -87,12 +77,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   // Logo and app name
                   Center(
                     child: Image.asset(
-                      'assets/images/logo.png',
-                      height: 60,
+                      'assets/images/logo.jpg',
+                      height: 80,
                       fit: BoxFit.contain,
                     ),
                   ),
-                  const SizedBox(height: 60),
+                  const SizedBox(height: 40),
 
                   // Login Text
                   const Align(

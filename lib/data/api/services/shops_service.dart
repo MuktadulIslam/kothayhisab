@@ -1,7 +1,6 @@
 // lib/services/shops_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:http/io_client.dart';
 import 'package:kothayhisab/data/api/services/auth_service.dart';
 import 'package:kothayhisab/config/app_config.dart';
 import 'package:kothayhisab/data/models/shop_model.dart';
@@ -55,7 +54,7 @@ class ShopsService {
 
       // Initial request
       final response = await http.post(
-        Uri.parse('${App.apiUrl}/shops/'),
+        Uri.parse('${App.apiUrl}/shops'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token,
@@ -134,34 +133,15 @@ class ShopsService {
     try {
       // Get token from auth service
       final token = await AuthService.getToken();
-      print('token: $token');
 
       if (token == null) {
         throw Exception('No authentication token found');
       }
 
-      final client = http.Client();
-      // final client = IOClient(HttpClient()..maxRedirects = 0);
-      // final response = await http.get(
-      //   Uri.parse('${App.apiUrl}/shops/'),
-      //   headers: {'Authorization': token, 'Accept-Charset': 'utf-8'},
-      // );
-
-      final request = http.Request('GET', Uri.parse('${App.apiUrl}/shops/'))
-        ..headers.addAll({'Authorization': token, 'Accept-Charset': 'utf-8'});
-
-      // Disable redirects by setting `followRedirects` to false
-      final streamedResponse = await client.send(request);
-
-      // Convert to regular Response if needed
-      final response = await http.Response.fromStream(streamedResponse);
-
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
-
-      print('token2: $token');
-
-      print('Response headers: ${response.headers}');
+      final response = await http.get(
+        Uri.parse('${App.apiUrl}/shops'),
+        headers: {'Authorization': token, 'Accept-Charset': 'utf-8'},
+      );
 
       // Proper encoding handling for response body
       final String responseBody = utf8.decode(response.bodyBytes);

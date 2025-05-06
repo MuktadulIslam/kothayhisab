@@ -1,9 +1,8 @@
-// lib/pages/add_employee_page.dart
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:kothayhisab/data/api/services/employee_service.dart';
 import 'package:kothayhisab/presentation/common_widgets/app_bar.dart';
 import 'package:kothayhisab/presentation/common_widgets/custom_bottom_app_bar.dart';
+import 'package:kothayhisab/presentation/common_widgets/toast_notification.dart';
 
 class AddEmployeePage extends StatefulWidget {
   final String shopId;
@@ -73,7 +72,7 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
       });
 
       if (result['success']) {
-        _showSuccessToast('নতুন কর্মচারী যোগ করা সফল হয়েছে!');
+        ToastNotification.success('নতুন কর্মচারী যোগ করা সফল হয়েছে!');
 
         // Safely call the callback
         if (!_isDisposed && mounted && widget.onEmployeeAdded != null) {
@@ -98,7 +97,9 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
         }
       } else {
         if (!_isDisposed) {
-          _showErrorToast(result['message']);
+          ToastNotification.error(
+            'কর্মচারী যোগ করতে সমস্যা হয়েছে! ${result['message']}',
+          );
         }
       }
     } catch (e) {
@@ -107,33 +108,9 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
         setState(() {
           _isLoading = false;
         });
-        _showErrorToast('Error: $e');
+        ToastNotification.error('কর্মচারী যোগ করতে সমস্যা হয়েছে!');
       }
     }
-  }
-
-  void _showSuccessToast(String message) {
-    Fluttertoast.showToast(
-      msg: message,
-      toastLength: Toast.LENGTH_LONG,
-      gravity: ToastGravity.BOTTOM,
-      timeInSecForIosWeb: 3,
-      backgroundColor: Colors.green,
-      textColor: Colors.white,
-      fontSize: 16.0,
-    );
-  }
-
-  void _showErrorToast(String message) {
-    Fluttertoast.showToast(
-      msg: message,
-      toastLength: Toast.LENGTH_LONG,
-      gravity: ToastGravity.BOTTOM,
-      timeInSecForIosWeb: 3,
-      backgroundColor: Colors.red,
-      textColor: Colors.white,
-      fontSize: 16.0,
-    );
   }
 
   @override

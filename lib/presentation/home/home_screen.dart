@@ -7,6 +7,7 @@ import 'package:kothayhisab/presentation/common_widgets/custom_bottom_app_bar.da
 import 'package:kothayhisab/config/app_config.dart';
 import 'package:kothayhisab/data/api/services/shops_service.dart';
 import 'package:kothayhisab/data/models/shop_model.dart';
+import 'package:kothayhisab/config/app_config.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -26,35 +27,33 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     // Check if user is authenticated
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   AuthMiddleware.checkAuth(context);
-    //   // _loadShops(); // Load shops when screen initializes
-    // });
-    AuthMiddleware.checkAuth(context);
-    _loadShops();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AuthMiddleware.checkAuth(context);
+      _loadShops(); // Load shops when screen initializes
+    });
   }
 
   // Load shops data from API
   Future<void> _loadShops() async {
-    // setState(() {
-    //   _isLoadingShops = true;
-    //   _errorMessage = null;
-    // });
+    setState(() {
+      _isLoadingShops = true;
+      _errorMessage = null;
+    });
 
     try {
       final shopsList = await _shopsService.getShops();
-      // setState(() {
-      //   shops = shopsList;
-      // });
+      setState(() {
+        shops = shopsList;
+      });
     } catch (e) {
-      // setState(() {
-      //   _errorMessage = 'Error loading shops: ${e.toString()}';
-      //   print(_errorMessage);
-      // });
+      setState(() {
+        _errorMessage = 'Error loading shops: ${e.toString()}';
+        print(_errorMessage);
+      });
     } finally {
-      // setState(() {
-      //   _isLoadingShops = false;
-      // });
+      setState(() {
+        _isLoadingShops = false;
+      });
     }
   }
 
@@ -89,37 +88,22 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0C5D8F),
-        title: const Text(
-          App.appName,
-          style: TextStyle(
-            fontSize: 30,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 0.5,
-            color: Colors.white,
-          ),
+        backgroundColor: Colors.white,
+
+        // backgroundColor: Colors.white,
+        title: Image.asset(
+          'assets/images/home_logo.jpg',
+          height: 50,
+          fit: BoxFit.contain,
         ),
         automaticallyImplyLeading: false, // This removes the back button
         actions: [
-          _isLoading
-              ? const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 10.0),
-                child: Center(
-                  child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
-                    ),
-                  ),
-                ),
-              )
-              : IconButton(
-                icon: const Icon(Icons.exit_to_app, color: Colors.white),
-                onPressed: _logout,
-                tooltip: 'Logout',
-              ),
+          IconButton(
+            icon: const Icon(Icons.exit_to_app, color: Color(0xFF00558D)),
+            onPressed: _logout,
+            tooltip: 'Logout',
+            iconSize: 25,
+          ),
         ],
       ),
       body: Column(
@@ -168,7 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             },
                             child: Container(
                               margin: const EdgeInsets.symmetric(
-                                horizontal: 16,
+                                horizontal: 12,
                                 vertical: 6,
                               ),
                               decoration: BoxDecoration(
@@ -180,13 +164,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                   BoxShadow(
                                     color: const Color.fromARGB(
                                       255,
-                                      23,
-                                      22,
-                                      22,
+                                      43,
+                                      43,
+                                      43,
                                     ).withOpacity(0.1),
-                                    spreadRadius: 3,
+                                    spreadRadius: 2,
                                     blurRadius: 2,
-                                    offset: const Offset(2, 2),
+                                    offset: const Offset(1, 1),
                                   ),
                                 ],
                               ),

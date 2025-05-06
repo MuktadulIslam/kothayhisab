@@ -1,18 +1,17 @@
 // lib/config/routes.dart
 import 'package:flutter/material.dart';
 import 'package:kothayhisab/core/constants/app_routes.dart';
-import 'package:kothayhisab/data/models/due_coustomer_model.dart';
 import 'package:kothayhisab/data/models/sales_model.dart';
 import 'package:kothayhisab/data/models/shop_model.dart';
-import 'package:kothayhisab/presentation/dut_accounts/add_due_account_screen.dart';
-import 'package:kothayhisab/presentation/dut_accounts/due_account_details_screen.dart';
-import 'package:kothayhisab/presentation/dut_accounts/show_due_accounts_screen.dart';
+import 'package:kothayhisab/presentation/customer_accounts/add_customer_account_screen.dart';
+import 'package:kothayhisab/presentation/customer_accounts/customer_account_details_screen.dart';
+import 'package:kothayhisab/presentation/customer_accounts/customer_accounts_screen.dart';
 
 import 'package:kothayhisab/presentation/home/home_screen.dart';
 import 'package:kothayhisab/presentation/home/splash_screen.dart';
 import 'package:kothayhisab/presentation/auth/login/login_screen.dart';
 import 'package:kothayhisab/presentation/auth/register/register_screen.dart';
-import 'package:kothayhisab/presentation/payments/due_payment_screen.dart';
+// import 'package:kothayhisab/presentation/payments/due_payment_screen.dart';
 import 'package:kothayhisab/presentation/profile/edit_profile_screen.dart';
 import 'package:kothayhisab/presentation/profile/help_screen.dart';
 import 'package:kothayhisab/presentation/profile/profile_screen.dart';
@@ -104,13 +103,12 @@ final Map<String, WidgetBuilder> appRoutes = {
   },
 
   // Sales routes with shopId
-  '/shop-details/add_sales': (context) {
-    final args =
-        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
-    final shopId = args?['shopId'] as String? ?? '';
-    return AddSalesScreen(shopId: shopId);
-  },
-
+  // '/shop-details/add_sales': (context) {
+  //   final args =
+  //       ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+  //   final shopId = args?['shopId'] as String? ?? '';
+  //   return AddSalesScreen(shopId: shopId);
+  // },
   '/shop-details/see_sales': (context) {
     final args =
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
@@ -125,52 +123,51 @@ final Map<String, WidgetBuilder> appRoutes = {
     return DuePage(shopId: shopId);
   },
 
-  '/shop-details/add-due-accounts': (context) {
+  '/shop-details/add-customer-accounts': (context) {
     final args =
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
     final shopId = args?['shopId'] as String? ?? '';
-    return AddDueCustomerScreen(shopId: shopId);
+    return AddCustomerAccountsScreen(shopId: shopId);
   },
-
-  '/shop-details/see-due-accounts': (context) {
+  '/shop-details/see-customer-accounts': (context) {
     final args =
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
     final shopId = args?['shopId'] as String? ?? '';
-    return DueAccountsScreen(shopId: shopId);
+    return CustomerAccountsScreen(shopId: shopId);
   },
 
-  '/shop-details/see-due-accounts/details': (context) {
-    final args =
-        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
-    final dueAccount =
-        args?['customer'] as Customer? ??
-        Customer(
-          id: '',
-          name: '',
-          address: '',
-          mobileNumber: '',
-          createdAt: DateTime.now(),
-          photoPath: null,
-        );
+  // '/shop-details/see-customer-accounts/details': (context) {
+  //   final args =
+  //       ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+  //   final dueAccount =
+  //       args?['customer'] as Customer? ??
+  //       Customer(
+  //         id: '',
+  //         name: '',
+  //         address: '',
+  //         mobileNumber: '',
+  //         createdAt: DateTime.now(),
+  //         photoPath: null,
+  //       );
 
-    return DueAccountsDetailsScreen(customer: dueAccount);
-  },
+  //   return DueAccountsDetailsScreen(customer: dueAccount);
+  // },
 
-  '/shop-details/make-due-payment': (context) {
-    final args =
-        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
-    final shopId = args?['shopId'] as String? ?? '';
-    final dueAccount =
-        args?['customer'] as Customer? ??
-        Customer(
-          id: '',
-          name: '',
-          address: '',
-          mobileNumber: '',
-          createdAt: DateTime.now(),
-          photoPath: null,
-        );
+  // '/shop-details/make-due-payment': (context) {
+  //   final args =
+  //       ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+  //   final shopId = args?['shopId'] as String? ?? '';
+  //   final dueAccount =
+  //       args?['customer'] as Customer? ??
+  //       Customer(
+  //         id: '',
+  //         name: '',
+  //         address: '',
+  //         mobileNumber: '',
+  //         createdAt: DateTime.now(),
+  //         photoPath: null,
+  //       );
 
-    return DuePaymentScreen(customer: dueAccount, shopId: shopId);
-  },
+  //   return DuePaymentScreen(customer: dueAccount, shopId: shopId);
+  // },
 };

@@ -67,15 +67,15 @@ class StoreCard extends StatelessWidget {
                       children: [
                         const Icon(
                           Icons.location_on,
-                          color: Colors.grey,
+                          color: Color.fromARGB(255, 110, 110, 110),
                           size: 18,
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 2),
                         Expanded(
                           child: Text(
                             shop.address,
                             style: const TextStyle(
-                              color: Colors.grey,
+                              color: Color.fromARGB(255, 110, 110, 110),
                               fontSize: 14,
                             ),
                             overflow: TextOverflow.ellipsis,
@@ -89,76 +89,83 @@ class StoreCard extends StatelessWidget {
               ),
               // Action buttons
               const SizedBox(width: 12),
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Change Button
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pushNamed(
-                        context,
-                        '/shop-details/update-shop',
-                        arguments: {'shop': shop},
-                      );
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF0C5D8F),
-                        borderRadius: BorderRadius.circular(20.0),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14.0,
-                        vertical: 6.0,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          Icon(Icons.edit, color: Colors.white, size: 14),
-                          SizedBox(width: 4),
-                          Text(
-                            'পরিবর্তন', // "Change" in Bengali
-                            style: TextStyle(color: Colors.white, fontSize: 12),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  // Employee Button
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pushNamed(
-                        context,
-                        '/shop-details/see-employees',
-                        arguments: {'shopId': shop.id.toString()},
-                      );
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: const Color(
-                          0xFF2E7D32,
-                        ), // Green color for employee button
-                        borderRadius: BorderRadius.circular(20.0),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14.0,
-                        vertical: 6.0,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          Icon(Icons.people, color: Colors.white, size: 14),
-                          SizedBox(width: 4),
-                          Text(
-                            'কর্মচারী', // "Employee" in Bengali
-                            style: TextStyle(color: Colors.white, fontSize: 12),
-                          ),
-                        ],
+              if (shop.userRole == 'Owner')
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Change Button
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pushNamed(
+                          context,
+                          '/shop-details/update-shop',
+                          arguments: {'shop': shop},
+                        );
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0C5D8F),
+                          borderRadius: BorderRadius.circular(20.0),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14.0,
+                          vertical: 6.0,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Icon(Icons.edit, color: Colors.white, size: 14),
+                            SizedBox(width: 4),
+                            Text(
+                              'পরিবর্তন', // "Change" in Bengali
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
+                    const SizedBox(height: 8),
+                    // Employee Button
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pushNamed(
+                          context,
+                          '/shop-details/see-employees',
+                          arguments: {'shopId': shop.id.toString()},
+                        );
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: const Color(
+                            0xFF2E7D32,
+                          ), // Green color for employee button
+                          borderRadius: BorderRadius.circular(20.0),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14.0,
+                          vertical: 6.0,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Icon(Icons.people, color: Colors.white, size: 14),
+                            SizedBox(width: 4),
+                            Text(
+                              'কর্মচারী', // "Employee" in Bengali
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
             ],
           ),
         ],

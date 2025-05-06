@@ -56,14 +56,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
           Navigator.of(context).pushReplacementNamed(AppRoutes.loginPage);
         }
       } else if (response['status_code'] == 409) {
-        // ignore: use_build_context_synchronously
         ToastNotification.error(
-          context,
           'এই নাম্বারের ব্যবহারকারী ইতোমধ্যেই রয়েছে। অন্য কোন নম্বর ব্যবহার করুন।',
         );
       } else {
-        // ignore: use_build_context_synchronously
-        ToastNotification.error(context, 'একটি অপ্রত্যাশিত ত্রুটি ঘটেছে!');
+        ToastNotification.error('একটি অপ্রত্যাশিত ত্রুটি ঘটেছে!');
       }
     }
   }
@@ -85,12 +82,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   // Logo and app name
                   Center(
                     child: Image.asset(
-                      'assets/images/logo.png',
-                      height: 60,
+                      'assets/images/logo.jpg',
+                      height: 80,
                       fit: BoxFit.contain,
                     ),
                   ),
-                  const SizedBox(height: 60),
+                  const SizedBox(height: 40),
 
                   const Align(
                     alignment: Alignment.centerLeft,
