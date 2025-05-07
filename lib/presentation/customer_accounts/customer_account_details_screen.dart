@@ -75,18 +75,9 @@ class _DueAccountsScreenState extends State<DueAccountsScreen> {
     });
 
     try {
-      // Get all customers first using the updated API
-      final customers = await _customerService.getCustomers(
-        widget.shopId,
-        hasDueOnly: false,
-        activeOnly: true,
-        skip: 0,
-        limit: 100,
-      );
-
       // Filter customers locally based on the query
       final filteredCustomers =
-          customers.where((customer) {
+          _customers.where((customer) {
             return customer.name.toLowerCase().contains(query.toLowerCase()) ||
                 customer.mobile.toLowerCase().contains(query.toLowerCase());
           }).toList();

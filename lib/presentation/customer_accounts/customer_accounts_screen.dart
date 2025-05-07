@@ -120,7 +120,9 @@ class _CustomerAccountsScreenState extends State<CustomerAccountsScreen> {
       );
 
       if (result) {
-        ToastNotification.success('বাকী পরিশোধ সফল হয়েছে');
+        ToastNotification.success(
+          '"${customer.name}" এর ${amount} টাকা বাকী পরিশোধ সফল হয়েছে',
+        );
       } else {
         ToastNotification.error('বাকী পরিশোধ ব্যর্থ হয়েছে');
       }

@@ -3,20 +3,14 @@ import 'dart:convert';
 class SalesItem {
   String name;
   double price; // Changed from num to double
-  String currency;
   num quantity;
   String quantityDescription;
-  String sourceText;
-  DateTime entryDate;
 
   SalesItem({
     required this.name,
     required this.price,
-    required this.currency,
     required this.quantity,
     required this.quantityDescription,
-    required this.sourceText,
-    required this.entryDate,
   });
 
   factory SalesItem.fromJson(Map<String, dynamic> json) {
@@ -53,27 +47,19 @@ class SalesItem {
     }
 
     return SalesItem(
-      name: fixEncoding(json['name'] ?? ''),
+      name: fixEncoding(json['product_name'] ?? ''),
       price: parsePrice(json['price']),
-      currency: fixEncoding(json['currency'] ?? '৳'),
       quantity: json['quantity'] ?? 0,
       quantityDescription: fixEncoding(json['quantity_description'] ?? ''),
-      sourceText: fixEncoding(json['source_text'] ?? ''),
-      entryDate:
-          json['entry_date'] != null
-              ? DateTime.parse(json['entry_date'])
-              : DateTime.now(),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'name': name,
+      'product_name': name,
       'price': price,
-      'currency': currency,
       'quantity': quantity,
       'quantity_description': quantityDescription,
-      'source_text': sourceText,
     };
   }
 }
