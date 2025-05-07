@@ -27,14 +27,8 @@ class InventoryService {
     return InventoryItem(
       name: apiItem['product_name'] ?? '',
       price: _convertToDouble(apiItem['price']),
-      currency: apiItem['currency'] ?? '৳',
       quantity: apiItem['quantity'] ?? 0,
       quantityDescription: apiItem['quantity_description'] ?? '',
-      sourceText: apiItem['raw_input_text'] ?? '',
-      entryDate:
-          apiItem['entry_date'] != null
-              ? DateTime.parse(apiItem['entry_date'])
-              : DateTime.now(),
     );
   }
 
@@ -49,7 +43,7 @@ class InventoryService {
       }
 
       final response = await http.get(
-        Uri.parse('${App.backendUrl}/inventory?shop_id=$shopId'),
+        Uri.parse('${App.apiUrl}/inventory?shop_id=$shopId'),
         headers: {'Authorization': token, 'Accept-Charset': 'utf-8'},
       );
 
@@ -65,8 +59,8 @@ class InventoryService {
                   .map((item) => _convertApiItemToInventoryItem(item))
                   .toList();
 
-          // Sort items by entry date (newest first)
-          items.sort((a, b) => b.entryDate.compareTo(a.entryDate));
+          // // Sort items by entry date (newest first)
+          // items.sort((a, b) => b.entryDate.compareTo(a.entryDate));
 
           return items;
         } catch (e) {
@@ -106,7 +100,7 @@ class InventoryService {
       }
 
       final response = await http.post(
-        Uri.parse('${App.backendUrl}/inventory/parse'),
+        Uri.parse('${App.apiUrl}/inventory/parse'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token,
@@ -161,9 +155,11 @@ class InventoryService {
 
   // Confirm and save inventory items
   Future<bool> confirmInventory(
+    String shopId,
     List<InventoryItem> items,
     String rawText,
-    String shopId,
+    double totalAmount,
+    String currency,
   ) async {
     try {
       // Get token from shared preferences
@@ -175,11 +171,13 @@ class InventoryService {
 
       final payload = {
         'products': items.map((item) => item.toJson()).toList(),
-        'raw_text': rawText,
+        "inventory_text": rawText,
+        "total_amount": totalAmount,
+        "currency": currency,
       };
 
       final response = await http.post(
-        Uri.parse('${App.backendUrl}/inventory/confirm?shop_id=$shopId'),
+        Uri.parse('${App.apiUrl}/inventory/confirm?shop_id=$shopId'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token,

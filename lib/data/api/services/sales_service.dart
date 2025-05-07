@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:kothayhisab/data/api/services/auth_service.dart';
 import 'package:kothayhisab/data/models/sales_model.dart';
 import 'package:kothayhisab/config/app_config.dart';
@@ -26,14 +27,8 @@ class SalesService {
     return SalesItem(
       name: apiItem['product_name'] ?? '',
       price: _convertToDouble(apiItem['price']),
-      currency: apiItem['currency'] ?? '৳',
       quantity: apiItem['quantity'] ?? 0,
       quantityDescription: apiItem['quantity_description'] ?? '',
-      sourceText: apiItem['raw_input_text'] ?? '',
-      entryDate:
-          apiItem['entry_date'] != null
-              ? DateTime.parse(apiItem['entry_date'])
-              : DateTime.now(),
     );
   }
 
@@ -48,7 +43,7 @@ class SalesService {
       }
 
       final response = await http.get(
-        Uri.parse('${App.backendUrl}/sales?shop_id=$shopId'),
+        Uri.parse('${App.apiUrl}/sales?shop_id=$shopId'),
         headers: {'Authorization': token, 'Accept-Charset': 'utf-8'},
       );
 
@@ -65,7 +60,7 @@ class SalesService {
                   .toList();
 
           // Sort items by entry date (newest first)
-          items.sort((a, b) => b.entryDate.compareTo(a.entryDate));
+          // items.sort((a, b) => b.entryDate.compareTo(a.entryDate));
 
           return items;
         } catch (e) {
@@ -105,7 +100,7 @@ class SalesService {
       }
 
       final response = await http.post(
-        Uri.parse('${App.backendUrl}/sales/parse'),
+        Uri.parse('${App.apiUrl}/sales/parse'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token,
@@ -160,9 +155,11 @@ class SalesService {
 
   // Confirm and save inventory items
   Future<bool> confirmSales(
+    String shopId,
     List<SalesItem> items,
     String rawText,
-    String shopId,
+    double totalAmount,
+    String currency,
   ) async {
     try {
       // Get token from shared preferences
@@ -173,12 +170,15 @@ class SalesService {
       }
 
       final payload = {
-        'sales': items.map((item) => item.toJson()).toList(),
-        'raw_text': rawText,
+        'products': items.map((item) => item.toJson()).toList(),
+        "sales_text": rawText,
+        "total_amount": totalAmount,
+        "currency": currency,
       };
+      print('Payload: $payload');
 
       final response = await http.post(
-        Uri.parse('${App.backendUrl}/sales/confirm?shop_id=$shopId'),
+        Uri.parse('${App.apiUrl}/sales/confirm?shop_id=$shopId'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token,
@@ -225,7 +225,7 @@ class SalesService {
       }
 
       final response = await http.post(
-        Uri.parse('${App.backendUrl}/due/parse'),
+        Uri.parse('${App.apiUrl}/due/parse'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token,
@@ -276,12 +276,17 @@ class SalesService {
     }
   }
 
-  Future<bool> confirmDueSale(
-    Map<String, dynamic> duesData,
-    List<SalesItem> items,
-    String rawText,
-    String shopId,
-  ) async {
+  Future<bool> confirmDueSale({
+    required int shopId,
+    required List<SalesItem> items,
+    required String rawText,
+    required double totalAmount,
+    required String currency,
+    required int customerId,
+    required double paidAmount,
+    required double dueAmount,
+    required String description,
+  }) async {
     try {
       // Get token from shared preferences
       final token = await AuthService.getToken();
@@ -290,49 +295,70 @@ class SalesService {
         throw Exception('No authentication token found');
       }
 
-      final saleResponse = await http.post(
-        Uri.parse('${App.backendUrl}/sales/confirm?shop_id=$shopId'),
+      // first making sale
+      final payloadForSale = {
+        'products': items.map((item) => item.toJson()).toList(),
+        "sales_text": rawText,
+        "total_amount": totalAmount,
+        "currency": currency,
+      };
+      final responseForSale = await http.post(
+        Uri.parse('${App.apiUrl}/sales/confirm?shop_id=$shopId'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token,
           'Accept-Charset': 'utf-8',
         },
-        body: jsonEncode({
-          'sales': items.map((item) => item.toJson()).toList(),
-          'raw_text': rawText,
-        }),
+        body: jsonEncode(payloadForSale),
       );
 
-      final duesResponse = await http.post(
-        Uri.parse('${App.backendUrl}/due/confirm'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token,
-          'Accept-Charset': 'utf-8',
-        },
-        body: jsonEncode({'due_data': duesData, 'shop_id': shopId}),
-      );
+      // now adding due in customar account
+      if (responseForSale.statusCode == 200 ||
+          responseForSale.statusCode == 201) {
+        try {
+          // Proper encoding handling for response body
+          final String saleResponseBody = utf8.decode(
+            responseForSale.bodyBytes,
+          );
+          final Map<String, dynamic> data = jsonDecode(saleResponseBody);
 
-      if ((saleResponse.statusCode == 200 || saleResponse.statusCode == 201) &&
-          (duesResponse.statusCode == 200 || duesResponse.statusCode == 201)) {
-        return true;
-      } else if (saleResponse.statusCode == 401 ||
-          saleResponse.statusCode == 403 ||
-          duesResponse.statusCode == 401 ||
-          duesResponse.statusCode == 403) {
-        print('Authentication error. Please log in again.');
-        throw Exception('Authentication error. Please log in again.');
+          // Create a map with the customer data
+          DateTime now = DateTime.now();
+          final payloadForDue = {
+            "sale_id": data['saved_sale']['id'],
+            "customer_id": customerId,
+            "amount_paid": paidAmount,
+            "due_amount": dueAmount,
+            "due_date": DateFormat('yyyy-MM-dd').format(now),
+            "description": description,
+          };
+          final responseForDue = await http.post(
+            Uri.parse('${App.apiUrl}/due/from-sale?shop_id=$shopId'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': token,
+              'Accept-Charset': 'utf-8',
+            },
+            body: jsonEncode(payloadForDue),
+          );
+
+          if (responseForDue.statusCode == 200 ||
+              responseForDue.statusCode == 201) {
+            return true;
+          } else {
+            return false;
+          }
+        } catch (e) {
+          print('Error parsing JSON response in due: $e');
+          return false;
+        }
       } else {
-        print(
-          'Failed to save due sale. Sale Status: ${saleResponse.statusCode} and Due Status ${duesResponse.statusCode}',
-        );
-        throw Exception(
-          'Failed to save due sale  Sale Status: ${saleResponse.statusCode} and Due Status ${duesResponse.statusCode}',
-        );
+        print('Failed in making the sale:');
+        return false;
       }
     } catch (e) {
       print('Error confirming sales: $e');
-      throw Exception('Error saving sales: $e');
+      return false;
     }
   }
 
@@ -346,7 +372,7 @@ class SalesService {
       }
 
       final response = await http.get(
-        Uri.parse('${App.backendUrl}/due/shops/$shopId?skip=0&limit=100'),
+        Uri.parse('${App.apiUrl}/due/shops/$shopId?skip=0&limit=100'),
         headers: {'Authorization': token, 'Accept-Charset': 'utf-8'},
       );
 

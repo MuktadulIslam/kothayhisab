@@ -35,7 +35,7 @@ class AuthService {
 
       // Make the request matching the Postman format
       final response = await http.post(
-        Uri.parse('${App.backendUrl}/auth/register'),
+        Uri.parse('${App.apiUrl}/auth/register'),
         headers: {'Content-Type': 'application/json; charset=UTF-8'},
         body: body,
       );
@@ -92,7 +92,7 @@ class AuthService {
 
       // Make the request matching the Postman format
       final response = await http.post(
-        Uri.parse('${App.backendUrl}/auth/login'),
+        Uri.parse('${App.apiUrl}/auth/login'),
         headers: {'Content-Type': 'application/json; charset=UTF-8'},
         body: body,
       );

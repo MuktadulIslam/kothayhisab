@@ -2,46 +2,31 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-import 'package:kothayhisab/data/api/services/due_account_services.dart';
+import 'package:kothayhisab/data/api/services/customer_account_services.dart';
+import 'package:kothayhisab/presentation/common_widgets/app_bar.dart';
+import 'package:kothayhisab/presentation/common_widgets/custom_bottom_app_bar.dart';
+import 'package:kothayhisab/presentation/common_widgets/toast_notification.dart';
 
-class AddDueCustomerScreen extends StatefulWidget {
+class AddCustomerAccountsScreen extends StatefulWidget {
   final String shopId;
-  const AddDueCustomerScreen({super.key, required this.shopId});
+  const AddCustomerAccountsScreen({super.key, required this.shopId});
 
   @override
-  _AddDueCustomerScreenState createState() => _AddDueCustomerScreenState();
+  _AddCustomerAccountsScreenState createState() =>
+      _AddCustomerAccountsScreenState();
 }
 
-class _AddDueCustomerScreenState extends State<AddDueCustomerScreen> {
+class _AddCustomerAccountsScreenState extends State<AddCustomerAccountsScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _mobileNumberController = TextEditingController();
   final _addressController = TextEditingController();
+  final CustomerService _customerService = CustomerService();
 
   File? _selectedImage;
   final ImagePicker _picker = ImagePicker();
 
   bool _isLoading = false;
-  String _errorMessage = '';
-
-  @override
-  void initState() {
-    super.initState();
-
-    // Add listeners to clear error message when input changes
-    _nameController.addListener(_clearErrorOnChange);
-    _mobileNumberController.addListener(_clearErrorOnChange);
-    _addressController.addListener(_clearErrorOnChange);
-  }
-
-  // Function to clear error message when user types in any field
-  void _clearErrorOnChange() {
-    if (_errorMessage.isNotEmpty) {
-      setState(() {
-        _errorMessage = '';
-      });
-    }
-  }
 
   // Function to pick image from gallery
   Future<void> _pickImage() async {
@@ -58,39 +43,27 @@ class _AddDueCustomerScreenState extends State<AddDueCustomerScreen> {
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
-        _errorMessage = '';
       });
 
       // Add customer with local storage service (1 second delay)
-      final response = await CustomerService.addCustomer(
-        _nameController.text,
-        _mobileNumberController.text,
-        _addressController.text,
-        _selectedImage?.path,
+      final response = await _customerService.createCustomer(
+        customerName: _nameController.text,
+        mobileNumber: _mobileNumberController.text,
+        address: _addressController.text,
+        photoUrl: _selectedImage?.path ?? '',
+        shopId: widget.shopId,
       );
 
       setState(() {
         _isLoading = false;
       });
 
-      if (response['status'] == 'success') {
-        if (mounted) {
-          // Show success snackbar
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('গ্রাহক সফলভাবে যোগ করা হয়েছে!'),
-              backgroundColor: Colors.green,
-            ),
-          );
-
-          // Go back to previous screen
-          Navigator.of(context).pop();
-        }
+      if (response) {
+        ToastNotification.success('গ্রাহক সফলভাবে যোগ করা হয়েছে!');
+        // Go back to previous screen
+        Navigator.of(context).pop();
       } else {
-        setState(() {
-          _errorMessage =
-              response['message'] ?? 'একটি অপ্রত্যাশিত ত্রুটি ঘটেছে!';
-        });
+        ToastNotification.success('একটি অপ্রত্যাশিত ত্রুটি ঘটেছে!');
       }
     }
   }
@@ -98,11 +71,7 @@ class _AddDueCustomerScreenState extends State<AddDueCustomerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('নতুন গ্রাহক যোগ করুন'),
-        backgroundColor: const Color(0xFF005A8D),
-        foregroundColor: Colors.white,
-      ),
+      appBar: CustomAppBar('নতুন গ্রাহক সংযোগ'),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -183,7 +152,7 @@ class _AddDueCustomerScreenState extends State<AddDueCustomerScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 10),
 
                   // Mobile Number Field with 01 prefix validation
                   TextFormField(
@@ -210,13 +179,12 @@ class _AddDueCustomerScreenState extends State<AddDueCustomerScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 10),
 
                   // Address Field
                   TextFormField(
                     controller: _addressController,
                     keyboardType: TextInputType.multiline,
-                    maxLines: 3,
                     decoration: const InputDecoration(
                       labelText: 'ঠিকানা',
                       border: OutlineInputBorder(),
@@ -230,19 +198,7 @@ class _AddDueCustomerScreenState extends State<AddDueCustomerScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 20),
-
-                  // Error Message
-                  if (_errorMessage.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: Text(
-                        _errorMessage,
-                        style: const TextStyle(color: Colors.red),
-                      ),
-                    ),
-                  const SizedBox(height: 24),
-
+                  const SizedBox(height: 15),
                   // Add Customer Button
                   ElevatedButton(
                     onPressed: _isLoading ? null : _addCustomer,
@@ -255,7 +211,13 @@ class _AddDueCustomerScreenState extends State<AddDueCustomerScreen> {
                             ? const CircularProgressIndicator(
                               color: Colors.white,
                             )
-                            : const Text('গ্রাহক যোগ করুন'),
+                            : const Text(
+                              'গ্রাহক যোগ করুন',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                   ),
                   const SizedBox(height: 20),
                 ],
@@ -264,16 +226,12 @@ class _AddDueCustomerScreenState extends State<AddDueCustomerScreen> {
           ),
         ),
       ),
+      bottomNavigationBar: CustomBottomAppBar(),
     );
   }
 
   @override
   void dispose() {
-    // Remove listeners before disposing controllers
-    _nameController.removeListener(_clearErrorOnChange);
-    _mobileNumberController.removeListener(_clearErrorOnChange);
-    _addressController.removeListener(_clearErrorOnChange);
-
     // Dispose of controllers
     _nameController.dispose();
     _mobileNumberController.dispose();

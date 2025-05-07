@@ -1,5 +1,6 @@
 class Shop {
   final String name;
+  final String userRole; // Changed to a regular String
   final String address;
   final String gpsLocation;
   final int? id;
@@ -10,13 +11,19 @@ class Shop {
     required this.name,
     required this.address,
     required this.gpsLocation,
+    this.userRole = "Owner", // Default value, can be overridden
     this.id,
     this.createdAt,
     this.updatedAt,
   });
 
   Map<String, dynamic> toJson() {
-    return {'shop_name': name, 'address': address, 'gps_location': gpsLocation};
+    return {
+      'shop_name': name,
+      'address': address,
+      'gps_location': gpsLocation,
+      'user_role': userRole,
+    };
   }
 
   factory Shop.fromJson(Map<String, dynamic> json) {
@@ -24,6 +31,7 @@ class Shop {
       name: json['shop_name'] ?? '',
       address: json['address'] ?? '',
       gpsLocation: json['gps_location'] ?? '',
+      userRole: json['user_role'] ?? 'Owner',
       id: json['id'],
       createdAt:
           json['created_at'] != null

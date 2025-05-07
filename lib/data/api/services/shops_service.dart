@@ -18,7 +18,7 @@ class ShopsService {
 
       // Initial request
       final response = await http.put(
-        Uri.parse('${App.backendUrl}/shops/${shop.id}'),
+        Uri.parse('${App.apiUrl}/shops/${shop.id}'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token,
@@ -54,7 +54,7 @@ class ShopsService {
 
       // Initial request
       final response = await http.post(
-        Uri.parse('${App.backendUrl}/shops/'),
+        Uri.parse('${App.apiUrl}/shops'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token,
@@ -139,7 +139,7 @@ class ShopsService {
       }
 
       final response = await http.get(
-        Uri.parse('${App.backendUrl}/shops/'),
+        Uri.parse('${App.apiUrl}/shops'),
         headers: {'Authorization': token, 'Accept-Charset': 'utf-8'},
       );
 
@@ -206,7 +206,7 @@ class ShopsService {
       }
 
       final response = await http.get(
-        Uri.parse('${App.backendUrl}/shops/$shopId'),
+        Uri.parse('${App.apiUrl}/shops/$shopId'),
         headers: {'Authorization': token, 'Accept-Charset': 'utf-8'},
       );
 

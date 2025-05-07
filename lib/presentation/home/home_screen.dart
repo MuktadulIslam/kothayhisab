@@ -7,6 +7,7 @@ import 'package:kothayhisab/presentation/common_widgets/custom_bottom_app_bar.da
 import 'package:kothayhisab/config/app_config.dart';
 import 'package:kothayhisab/data/api/services/shops_service.dart';
 import 'package:kothayhisab/data/models/shop_model.dart';
+import 'package:kothayhisab/config/app_config.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -87,37 +88,22 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0C5D8F),
-        title: const Text(
-          App.appName,
-          style: TextStyle(
-            fontSize: 30,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 0.5,
-            color: Colors.white,
-          ),
+        backgroundColor: Colors.white,
+
+        // backgroundColor: Colors.white,
+        title: Image.asset(
+          'assets/images/home_logo.jpg',
+          height: 50,
+          fit: BoxFit.contain,
         ),
         automaticallyImplyLeading: false, // This removes the back button
         actions: [
-          _isLoading
-              ? const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 10.0),
-                child: Center(
-                  child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
-                    ),
-                  ),
-                ),
-              )
-              : IconButton(
-                icon: const Icon(Icons.exit_to_app, color: Colors.white),
-                onPressed: _logout,
-                tooltip: 'Logout',
-              ),
+          IconButton(
+            icon: const Icon(Icons.exit_to_app, color: Color(0xFF00558D)),
+            onPressed: _logout,
+            tooltip: 'Logout',
+            iconSize: 25,
+          ),
         ],
       ),
       body: Column(
@@ -144,7 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       : shops.isEmpty
                       ? const Center(
                         child: Text(
-                          'কোন দোকান নেই',
+                          'কোন দোকান যোগ করা হয়নি!',
                           style: TextStyle(
                             fontSize: 20,
                             color: Color.fromARGB(255, 139, 133, 133),
@@ -166,25 +152,32 @@ class _HomeScreenState extends State<HomeScreen> {
                             },
                             child: Container(
                               margin: const EdgeInsets.symmetric(
-                                horizontal: 16,
+                                horizontal: 12,
                                 vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: const Color(
+                                  0xFFF2F8FF,
+                                ), // Changed from Colors.white to #f2f8ff
                                 borderRadius: BorderRadius.circular(8),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.grey.withOpacity(0.1),
-                                    spreadRadius: 1,
+                                    color: const Color.fromARGB(
+                                      255,
+                                      43,
+                                      43,
+                                      43,
+                                    ).withOpacity(0.1),
+                                    spreadRadius: 2,
                                     blurRadius: 2,
-                                    offset: const Offset(0, 1),
+                                    offset: const Offset(1, 1),
                                   ),
                                 ],
                               ),
                               child: ListTile(
                                 contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 16,
-                                  vertical: 4,
+                                  vertical: 2,
                                 ),
                                 title: Text(
                                   shop.name,
@@ -197,23 +190,22 @@ class _HomeScreenState extends State<HomeScreen> {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 subtitle: Padding(
-                                  padding: const EdgeInsets.only(top: 4.0),
+                                  padding: const EdgeInsets.only(top: 2.0),
                                   child: Row(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
                                       const Icon(
                                         Icons.location_on,
-                                        size: 14,
+                                        size: 16,
                                         color: Colors.black54,
                                       ),
-                                      const SizedBox(width: 4),
                                       Expanded(
                                         child: Text.rich(
                                           TextSpan(
                                             children: [
                                               TextSpan(
-                                                text: 'লোকেশান: ',
+                                                text: 'ঠিকানাঃ ',
                                                 style: TextStyle(
                                                   color: Colors.grey[700],
                                                   fontSize: 12,
@@ -223,7 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               TextSpan(
                                                 text: shop.address,
                                                 style: TextStyle(
-                                                  color: Colors.grey[700],
+                                                  color: Colors.black,
                                                   fontSize: 12,
                                                 ),
                                               ),

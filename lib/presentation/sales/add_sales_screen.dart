@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:io';
 import 'package:kothayhisab/data/api/services/sales_service.dart';
-import 'package:kothayhisab/data/api/services/due_account_services.dart';
+import 'package:kothayhisab/data/api/services/customer_account_services.dart';
 import 'package:kothayhisab/data/models/sales_model.dart';
-import 'package:kothayhisab/data/models/due_coustomer_model.dart';
+import 'package:kothayhisab/data/models/customer_model.dart';
 import 'package:kothayhisab/presentation/common_widgets/app_bar.dart';
 import 'package:kothayhisab/presentation/common_widgets/custom_bottom_app_bar.dart';
 import 'package:kothayhisab/core/utils/currency_formatter.dart';
+import 'package:kothayhisab/presentation/common_widgets/custom_date_picker.dart';
+import 'package:kothayhisab/presentation/common_widgets/toast_notification.dart';
 
 class AddSalesScreen extends StatefulWidget {
   final String shopId;
@@ -25,35 +27,35 @@ class _AddSalesScreenState extends State<AddSalesScreen> {
       TextEditingController();
   final FocusNode _textFocusNode = FocusNode();
   final SalesService _salesService = SalesService();
+  final CustomerService _customerService = CustomerService();
+  final String _currency = '৳';
+  final bool _useBengaliDigits = true;
 
   // State variables
   bool _isLoading = false;
   bool _isSaving = false;
   bool _isLoadingCustomers = false;
   List<SalesItem> _parsedItems = [];
-  bool _hasError = false;
-  String _errorMessage = '';
+  // bool _hasError = false;
+  // String _errorMessage = '';
+  String _rowText = '';
   bool _productsVisible = false;
-  bool _useBengaliDigits = true;
   bool _inDueSaleMode = false;
   bool _customerSelectionMode = false;
   bool _customerDataVisible = false;
   Map<String, dynamic>? _customerDueData;
   Customer? _selectedCustomer;
   List<Customer> _customers = [];
-  late String currency;
 
   // Grid view configuration
   final int _crossAxisCount = 2;
   final double _aspectRatio = 3.5;
-  final double _customerGridHeight = 300.0;
+  final double _customerGridHeight = 250.0;
 
   @override
   void initState() {
     super.initState();
     _textFocusNode.addListener(_onFocusChange);
-    currency = _parsedItems.isNotEmpty ? _parsedItems.first.currency : '৳';
-    _paymentAmountController.text = '0'; // Default paid amount is 0
   }
 
   @override
@@ -68,24 +70,7 @@ class _AddSalesScreenState extends State<AddSalesScreen> {
 
   // Helper Methods
   void _onFocusChange() {
-    setState(() {
-      _hasError = false;
-      _errorMessage = '';
-    });
-  }
-
-  void _setError(String message) {
-    setState(() {
-      _hasError = true;
-      _errorMessage = message;
-    });
-  }
-
-  void _clearError() {
-    setState(() {
-      _hasError = false;
-      _errorMessage = '';
-    });
+    setState(() {});
   }
 
   // Calculate total price of all items
@@ -110,22 +95,26 @@ class _AddSalesScreenState extends State<AddSalesScreen> {
   Future<void> _loadCustomers() async {
     setState(() {
       _isLoadingCustomers = true;
-      _errorMessage = '';
     });
 
     try {
-      final response = await CustomerService.getAllCustomers();
+      final customerData = await _customerService.getCustomers(
+        widget.shopId,
+        hasDueOnly: false, // Get all customers, not just those with dues
+        activeOnly: true, // Only get active customers
+        skip: 0, // Start from the first record
+        limit: 100, // Get up to 100 customers);
+      );
 
-      if (response['status'] == 'success') {
-        List<dynamic> data = response['data'];
+      if (customerData != []) {
         setState(() {
-          _customers = data.map((item) => Customer.fromJson(item)).toList();
+          _customers = customerData;
         });
       } else {
-        _setError(response['message'] ?? 'তালিকা লোড করতে সমস্যা হচ্ছে');
+        ToastNotification.error('তালিকা লোড করতে সমস্যা হচ্ছে');
       }
     } catch (e) {
-      _setError('গ্রাহকের তালিকা লোড করতে সমস্যা হয়েছে');
+      ToastNotification.error('কোনো  গ্রাহকের তালিকা পাওয়া যায়নি!');
     } finally {
       setState(() {
         _isLoadingCustomers = false;
@@ -134,29 +123,28 @@ class _AddSalesScreenState extends State<AddSalesScreen> {
   }
 
   Future<void> _searchCustomers(String query) async {
-    setState(() {
-      _isLoadingCustomers = true;
-      _errorMessage = '';
-    });
+    // setState(() {
+    //   _isLoadingCustomers = true;
+    // });
 
-    try {
-      final response = await CustomerService.searchCustomers(query);
+    // try {
+    //   final response = await CustomerService.searchCustomers(query);
 
-      if (response['status'] == 'success') {
-        List<dynamic> data = response['data'];
-        setState(() {
-          _customers = data.map((item) => Customer.fromJson(item)).toList();
-        });
-      } else {
-        _setError(response['message'] ?? 'খুঁজতে সমস্যা হচ্ছে');
-      }
-    } catch (e) {
-      _setError('গ্রাহক খুঁজতে সমস্যা হয়েছে');
-    } finally {
-      setState(() {
-        _isLoadingCustomers = false;
-      });
-    }
+    //   if (response['status'] == 'success') {
+    //     List<dynamic> data = response['data'];
+    //     setState(() {
+    //       _customers = data.map((item) => Customer.fromJson(item)).toList();
+    //     });
+    //   } else {
+    // ToastNotification.error('গ্রাহকের তালিকা খুঁজতে সমস্যা হচ্ছে');
+    //   }
+    // } catch (e) {
+    //   ToastNotification.error('গ্রাহকের তালিকা খুঁজতে সমস্যা হচ্ছে');
+    // } finally {
+    //   setState(() {
+    //     _isLoadingCustomers = false;
+    //   });
+    // }
   }
 
   // Action Methods
@@ -192,25 +180,20 @@ class _AddSalesScreenState extends State<AddSalesScreen> {
         _customerDataVisible = false;
         _customerDueData = null;
         _textController.clear();
-        _hasError = false;
-        _errorMessage = '';
       });
     }
     // Case 3: If input field is not empty, clear it
     else if (_textController.text.trim().isNotEmpty) {
       setState(() {
         _textController.clear();
-        _hasError = false;
-        _errorMessage = '';
       });
     }
     // Case 4: If table data exists, clear table
     else if (_parsedItems.isNotEmpty) {
       setState(() {
+        _rowText = '';
         _parsedItems = [];
         _productsVisible = false;
-        _hasError = false;
-        _errorMessage = '';
       });
     }
     // Case 5: If both input and table are empty, go back
@@ -235,13 +218,17 @@ class _AddSalesScreenState extends State<AddSalesScreen> {
 
     final text = _textController.text.trim();
     if (text.isEmpty) {
-      _setError('টেক্সট লিখুন বা ভয়েস রেকর্ড করুন');
+      ToastNotification.error('টেক্সট লিখুন বা ভয়েস রেকর্ড করুন');
       return;
+    }
+    if (_rowText == '') {
+      _rowText = text;
+    } else {
+      _rowText += '\n$text';
     }
 
     setState(() {
       _isLoading = true;
-      _clearError();
     });
 
     try {
@@ -273,41 +260,39 @@ class _AddSalesScreenState extends State<AddSalesScreen> {
           errorMsg =
               'মজুদ টেক্সট পার্স করা সম্ভব হয়নি। অন্য ফরম্যাটে চেষ্টা করুন।';
         }
-
-        _setError(errorMsg);
+        ToastNotification.error(errorMsg);
       });
     }
   }
 
   Future<void> _cashSale() async {
     if (_parsedItems.isEmpty) {
-      _setError('কোন পণ্য যোগ করা হয়নি');
+      ToastNotification.error('কোন পণ্য যোগ করা হয়নি');
       return;
     }
 
     setState(() {
       _isSaving = true;
-      _clearError();
     });
 
     try {
       final result = await _salesService.confirmSales(
-        _parsedItems,
-        _textController.text.trim(),
         widget.shopId,
+        _parsedItems,
+        _rowText,
+        _calculateTotalPrice(),
+        _currency,
       );
 
       if (result) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('বিক্রয় সফলভাবে সংরক্ষিত হয়েছে')),
-        );
+        ToastNotification.success('বিক্রয় সফলভাবে সংরক্ষিত হয়েছে');
+        ToastNotification.error('কোন পণ্য যোগ করা হয়নি');
 
         // Reset the state
         setState(() {
           _textController.clear();
           _parsedItems = [];
           _productsVisible = false;
-          _clearError();
         });
       }
     } catch (e) {
@@ -315,7 +300,7 @@ class _AddSalesScreenState extends State<AddSalesScreen> {
       if (errorMsg.startsWith('Exception: ')) {
         errorMsg = errorMsg.substring('Exception: '.length);
       }
-      _setError(errorMsg);
+      ToastNotification.error(errorMsg);
     } finally {
       setState(() {
         _isSaving = false;
@@ -363,18 +348,17 @@ class _AddSalesScreenState extends State<AddSalesScreen> {
 
   Future<void> _completeDueSale() async {
     if (_parsedItems.isEmpty) {
-      _setError('কোন পণ্য যোগ করা হয়নি');
+      ToastNotification.error('কোন পণ্য যোগ করা হয়নি');
       return;
     }
 
     if (_selectedCustomer == null) {
-      _setError('গ্রাহক নির্বাচন করুন');
+      ToastNotification.error('গ্রাহক নির্বাচন করুন');
       return;
     }
 
     setState(() {
       _isSaving = true;
-      _clearError();
     });
 
     try {
@@ -382,37 +366,25 @@ class _AddSalesScreenState extends State<AddSalesScreen> {
       double totalAmount = _calculateTotalPrice();
       double dueAmount = totalAmount - paidAmount;
 
-      // Create customer due data if it doesn't exist
-      if (_customerDueData == null) {
-        _customerDueData = {
-          'customer_id': _selectedCustomer!.id,
-          'customer_name': _selectedCustomer!.name,
-          'total_amount': totalAmount,
-          'paid_amount': paidAmount,
-          'due_amount': dueAmount,
-        };
-      } else {
-        // Update the values
-        _customerDueData!['paid_amount'] = paidAmount;
-        _customerDueData!['due_amount'] = dueAmount;
-      }
-
       final result = await _salesService.confirmDueSale(
-        _customerDueData!,
-        _parsedItems,
-        "${_selectedCustomer!.name} ${_paymentAmountController.text} টাকা জমা দিয়েছে",
-        widget.shopId,
+        shopId: int.parse(widget.shopId),
+        items: _parsedItems,
+        rawText: _rowText,
+        totalAmount: totalAmount,
+        currency: _currency,
+        customerId: _selectedCustomer!.id ?? 0,
+        paidAmount: paidAmount,
+        dueAmount: dueAmount,
+        description:
+            "${_selectedCustomer!.name} ${_paymentAmountController.text} টাকা জমা দিয়েছে",
       );
 
       if (result) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('বাকিতে বিক্রয় সফলভাবে সংরক্ষিত হয়েছে')),
-        );
-
+        ToastNotification.success('বাকিতে বিক্রয় সফলভাবে সংরক্ষিত হয়েছে');
         // Reset the state
         setState(() {
           _textController.clear();
-          _paymentAmountController.text = '0';
+          _paymentAmountController.text = '';
           _parsedItems = [];
           _productsVisible = false;
           _inDueSaleMode = false;
@@ -420,7 +392,6 @@ class _AddSalesScreenState extends State<AddSalesScreen> {
           _customerDataVisible = false;
           _customerDueData = null;
           _selectedCustomer = null;
-          _clearError();
         });
       }
     } catch (e) {
@@ -428,7 +399,7 @@ class _AddSalesScreenState extends State<AddSalesScreen> {
       if (errorMsg.startsWith('Exception: ')) {
         errorMsg = errorMsg.substring('Exception: '.length);
       }
-      _setError(errorMsg);
+      ToastNotification.error(errorMsg);
     } finally {
       setState(() {
         _isSaving = false;
@@ -447,11 +418,7 @@ class _AddSalesScreenState extends State<AddSalesScreen> {
   }
 
   void _showAddNewCustomerDialog() {
-    // Implementation for adding new customer
-    // This would typically show a dialog or navigate to a new customer creation screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('নতুন গ্রাহক যোগ করার ফিচার বাস্তবায়ন প্রয়োজন')),
-    );
+    ToastNotification.info('নতুন গ্রাহক যোগ করার ফিচার বাস্তবায়ন প্রয়োজন');
   }
 
   // UI Building Methods
@@ -486,34 +453,48 @@ class _AddSalesScreenState extends State<AddSalesScreen> {
     );
   }
 
-  Widget _buildErrorMessage() {
-    if (!_hasError) return SizedBox.shrink();
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.red.shade50,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.red.shade200),
-        ),
-        child: Text(
-          _errorMessage,
-          style: TextStyle(color: Colors.red.shade800),
-          textAlign: TextAlign.center,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCustomerSelectionSection() {
+  Widget _buildCustomerSelectionSection(viewInsets, isKeyboardOpen) {
     if (!_customerSelectionMode) return SizedBox.shrink();
 
     return Column(
       children: [
-        // Amount entry at the top
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.blue.shade50,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.blue.shade200),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'মোট মূল্যঃ',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                    Text(
+                      '$_currency ${BdTakaFormatter.format(_calculateTotalPrice(), toBengaliDigits: _useBengaliDigits)}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                        color: Colors.blue.shade800,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        // Amount entry at top
         Padding(
           padding: const EdgeInsets.all(12.0),
           child: TextField(
@@ -585,16 +566,25 @@ class _AddSalesScreenState extends State<AddSalesScreen> {
                 ),
                 child: IconButton(
                   icon: Icon(Icons.person_add, color: Colors.white),
-                  onPressed: _showAddNewCustomerDialog,
+                  onPressed: () {
+                    Navigator.pushNamed(
+                      context,
+                      '/shop-details/add-customer-accounts',
+                      arguments: {'shopId': widget.shopId},
+                    ).then((value) {
+                      if (value == true) {
+                        _loadCustomers();
+                      }
+                    });
+                  },
                 ),
               ),
             ],
           ),
         ),
 
-        // Customer Grid with fixed height
-        Container(
-          height: _customerGridHeight,
+        // Customer Grid with expanded height
+        Expanded(
           child:
               _isLoadingCustomers
                   ? Center(child: CircularProgressIndicator())
@@ -622,6 +612,63 @@ class _AddSalesScreenState extends State<AddSalesScreen> {
                     },
                   ),
         ),
+
+        // Action buttons at bottom
+        Padding(
+          padding: EdgeInsets.only(
+            left: 10.0,
+            right: 10.0,
+            top: 8.0,
+            bottom: isKeyboardOpen ? viewInsets.bottom : 16.0,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey.shade200,
+                    foregroundColor: Colors.black87,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  onPressed: _handleCancelButtonPress,
+                  child: Text('বাতিল'),
+                ),
+              ),
+              SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF005A8D),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  onPressed:
+                      _selectedCustomer != null ? _completeDueSale : null,
+                  child: Opacity(
+                    opacity: _selectedCustomer != null ? 1.0 : 0.5,
+                    child:
+                        _isSaving
+                            ? SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                            : Text('বাকিতে বিক্রয় করুন'),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -643,7 +690,7 @@ class _AddSalesScreenState extends State<AddSalesScreen> {
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.all(0.0),
+          padding: const EdgeInsets.symmetric(vertical: 4.0),
           child: Row(
             children: [
               // Customer photo (Left side)
@@ -653,65 +700,65 @@ class _AddSalesScreenState extends State<AddSalesScreen> {
                   CircleAvatar(
                     radius: 30,
                     backgroundColor: const Color(0xFFE8F5FE),
-                    child:
-                        customer.photoPath != null &&
-                                File(customer.photoPath!).existsSync()
-                            ? ClipOval(
-                              child: Image.file(
-                                File(customer.photoPath!),
-                                width: 40,
-                                height: 40,
-                                fit: BoxFit.cover,
-                              ),
-                            )
-                            : const Icon(
-                              Icons.person,
-                              size: 30,
-                              color: Color(0xFF00558D),
-                            ),
+                    child: const Icon(
+                      Icons.person,
+                      size: 30,
+                      color: Color(0xFF00558D),
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(width: 2),
 
               // Customer info (Right side)
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Customer name
-                    Text(
-                      customer.name,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF00558D),
-                        height: 1,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-
-                    // Customer address
-                    RichText(
-                      text: TextSpan(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 2.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Customer name
+                      Text(
+                        customer.name,
                         style: const TextStyle(
-                          fontSize: 11,
-                          color: Color.fromARGB(255, 36, 31, 31),
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF00558D),
+                          height: 1,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      SizedBox(height: 4),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const TextSpan(
-                            text: 'ঠিকানাঃ ',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                          const Icon(
+                            Icons.location_on,
+                            size: 15,
+                            color: Colors.black54,
                           ),
-                          TextSpan(text: '${customer.address}'),
+                          Expanded(
+                            child: Text.rich(
+                              TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: customer.address,
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                         ],
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -866,7 +913,7 @@ class _AddSalesScreenState extends State<AddSalesScreen> {
                         ),
                       ),
                       Text(
-                        '$currency ${BdTakaFormatter.format(_calculateTotalPrice(), toBengaliDigits: _useBengaliDigits)}',
+                        '$_currency ${BdTakaFormatter.format(_calculateTotalPrice(), toBengaliDigits: _useBengaliDigits)}',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: fontSize,
@@ -947,7 +994,7 @@ class _AddSalesScreenState extends State<AddSalesScreen> {
                   Expanded(child: Text(_formatQuantity(item))),
                   Expanded(
                     child: Text(
-                      '${item.currency} ${BdTakaFormatter.format(item.price, toBengaliDigits: _useBengaliDigits)}',
+                      '$_currency ${BdTakaFormatter.format(item.price, toBengaliDigits: _useBengaliDigits)}',
                       textAlign: TextAlign.right,
                     ),
                   ),
@@ -1147,182 +1194,7 @@ class _AddSalesScreenState extends State<AddSalesScreen> {
         resizeToAvoidBottomInset: true,
         appBar: CustomAppBar('বাকিতে বিক্রয়'),
         body: SafeArea(
-          child: Column(
-            children: [
-              // Amount entry at top
-              Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: TextField(
-                  controller: _paymentAmountController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: 'জমার পরিমাণ',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    prefixIcon: Icon(
-                      Icons.attach_money,
-                      color: Color(0xFF00558D),
-                    ),
-                    hintText: '০',
-                  ),
-                ),
-              ),
-
-              // Row with search bar and add button
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12.0,
-                  vertical: 8.0,
-                ),
-                child: Row(
-                  children: [
-                    // Search bar
-                    Expanded(
-                      child: Container(
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.grey.shade300),
-                        ),
-                        child: TextField(
-                          controller: _searchController,
-                          decoration: InputDecoration(
-                            hintText: 'গ্রাহক খুঁজুন',
-                            prefixIcon: const Icon(
-                              Icons.search,
-                              color: Color(0xFF00558D),
-                            ),
-                            suffixIcon:
-                                _searchController.text.isNotEmpty
-                                    ? IconButton(
-                                      icon: const Icon(
-                                        Icons.clear,
-                                        color: Color(0xFF00558D),
-                                      ),
-                                      onPressed: () {
-                                        _searchController.clear();
-                                      },
-                                    )
-                                    : null,
-                            border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 14,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // Add new button
-                    SizedBox(width: 10),
-                    Container(
-                      height: 50,
-                      width: 50,
-                      decoration: BoxDecoration(
-                        color: Color(0xFF00558D),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: IconButton(
-                        icon: Icon(Icons.person_add, color: Colors.white),
-                        onPressed: _showAddNewCustomerDialog,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Customer Grid with expanded height
-              Expanded(
-                child:
-                    _isLoadingCustomers
-                        ? Center(child: CircularProgressIndicator())
-                        : _customers.isEmpty
-                        ? Center(
-                          child: Text(
-                            'কোন গ্রাহক পাওয়া যায়নি',
-                            style: TextStyle(
-                              fontSize: 20,
-                              color: Color.fromARGB(255, 139, 133, 133),
-                            ),
-                          ),
-                        )
-                        : GridView.builder(
-                          padding: const EdgeInsets.all(8),
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: _crossAxisCount,
-                                childAspectRatio: _aspectRatio,
-                                crossAxisSpacing: 10,
-                                mainAxisSpacing: 10,
-                              ),
-                          itemCount: _customers.length,
-                          itemBuilder: (context, index) {
-                            return _buildCustomerCard(_customers[index]);
-                          },
-                        ),
-              ),
-
-              // Action buttons at bottom
-              Padding(
-                padding: EdgeInsets.only(
-                  left: 10.0,
-                  right: 10.0,
-                  top: 8.0,
-                  bottom: isKeyboardOpen ? viewInsets.bottom : 16.0,
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey.shade200,
-                          foregroundColor: Colors.black87,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          padding: EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        onPressed: _handleCancelButtonPress,
-                        child: Text('বাতিল'),
-                      ),
-                    ),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFF005A8D),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          padding: EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        onPressed:
-                            _selectedCustomer != null ? _completeDueSale : null,
-                        child: Opacity(
-                          opacity: _selectedCustomer != null ? 1.0 : 0.5,
-                          child:
-                              _isSaving
-                                  ? SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                  : Text('বাকিতে বিক্রয় করুন'),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+          child: _buildCustomerSelectionSection(viewInsets, isKeyboardOpen),
         ),
         bottomNavigationBar: CustomBottomAppBar(),
       );
@@ -1337,6 +1209,16 @@ class _AddSalesScreenState extends State<AddSalesScreen> {
           onTap: () => FocusScope.of(context).unfocus(),
           child: Column(
             children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 3, left: 10, right: 10),
+                child: CustomDatePicker(
+                  onDateSelected: (DateTime selectedDate) {
+                    // Handle the selected date
+                    print('Date selected: $selectedDate');
+                  },
+                ),
+              ),
+
               // Hide input section if a customer is selected for due sale
               if (!(_inDueSaleMode && _customerDataVisible))
                 _buildInputSection(),
@@ -1348,7 +1230,6 @@ class _AddSalesScreenState extends State<AddSalesScreen> {
                   child: Column(
                     children: [
                       SizedBox(height: 16),
-                      _buildErrorMessage(),
                       ..._buildTotalPriceSection(),
                       _buildItemsTable(),
                     ],

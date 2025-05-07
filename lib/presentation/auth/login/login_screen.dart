@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kothayhisab/data/api/services/auth_service.dart';
 import 'package:kothayhisab/data/api/middleware/auth_middleware.dart';
 import 'package:kothayhisab/core/constants/app_routes.dart';
+import 'package:kothayhisab/presentation/common_widgets/toast_notification.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -16,7 +17,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
 
   bool _isLoading = false;
-  String _errorMessage = '';
   bool _obscurePassword = true; // For password visibility toggle
 
   @override
@@ -26,26 +26,12 @@ class _LoginScreenState extends State<LoginScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       AuthMiddleware.checkAlreadyLoggedIn(context);
     });
-
-    // Add listeners to clear error message when input changes
-    _mobileNumberController.addListener(_clearErrorOnChange);
-    _passwordController.addListener(_clearErrorOnChange);
-  }
-
-  // Function to clear error message when user types in any field
-  void _clearErrorOnChange() {
-    if (_errorMessage.isNotEmpty) {
-      setState(() {
-        _errorMessage = '';
-      });
-    }
   }
 
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
-        _errorMessage = '';
       });
 
       final response = await AuthService.login(
@@ -62,17 +48,14 @@ class _LoginScreenState extends State<LoginScreen> {
         if (mounted) {
           Navigator.of(context).pushReplacementNamed(AppRoutes.homePage);
         } else {
-          _errorMessage =
-              'অ্যাপে একটি অপ্রত্যাশিত ত্রুটি ঘটেছে। দয়া করে আবার লগইন করুন।';
+          ToastNotification.error(
+            'অ্যাপে একটি অপ্রত্যাশিত ত্রুটি ঘটেছে। দয়া করে আবার লগইন করুন।',
+          );
         }
       } else if (response['status_code'] == 401) {
-        setState(() {
-          _errorMessage = 'ফোন নম্বর অথবা পাসওয়ার্ড সঠিক নয়';
-        });
+        ToastNotification.error('ফোন নম্বর অথবা পাসওয়ার্ড সঠিক নয়');
       } else {
-        setState(() {
-          _errorMessage = 'একটি অপ্রত্যাশিত ত্রুটি ঘটেছে';
-        });
+        ToastNotification.error('একটি অপ্রত্যাশিত ত্রুটি ঘটেছে');
       }
     }
   }
@@ -94,25 +77,26 @@ class _LoginScreenState extends State<LoginScreen> {
                   // Logo and app name
                   Center(
                     child: Image.asset(
-                      'assets/images/logo.png',
-                      height: 60,
+                      'assets/images/logo.jpg',
+                      height: 80,
                       fit: BoxFit.contain,
                     ),
                   ),
-                  const SizedBox(height: 60),
+                  const SizedBox(height: 40),
 
                   // Login Text
                   const Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      'অ্যাপে  প্রবেশ',
+                      'লগইন করুন',
                       style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        color: Color.fromARGB(255, 28, 65, 130),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 15),
 
                   // Mobile Number Field with validation
                   TextFormField(
@@ -138,7 +122,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 10),
 
                   // Password Field with visibility toggle and updated validation
                   TextFormField(
@@ -171,16 +155,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       return null;
                     },
                   ),
-
-                  // Error Message
-                  if (_errorMessage.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: Text(
-                        _errorMessage,
-                        style: const TextStyle(color: Colors.red),
-                      ),
-                    ),
                   const SizedBox(height: 24),
 
                   // Login Button
@@ -204,7 +178,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Text(
-                        "অ্যাকাউন্ট নেই? ",
+                        "আপনার অ্যাকাউন্ট নেই? ",
                         style: TextStyle(fontSize: 14, color: Colors.black87),
                       ),
                       GestureDetector(
@@ -214,11 +188,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           ).pushNamed(AppRoutes.registerPage);
                         },
                         child: const Text(
-                          'রেজিস্টার',
+                          'রেজিস্টার করুন',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF005A8D),
+                            decoration: TextDecoration.underline,
                           ),
                         ),
                       ),
@@ -235,10 +210,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
-    // Remove listeners before disposing controllers
-    _mobileNumberController.removeListener(_clearErrorOnChange);
-    _passwordController.removeListener(_clearErrorOnChange);
-
     // Dispose of controllers
     _mobileNumberController.dispose();
     _passwordController.dispose();

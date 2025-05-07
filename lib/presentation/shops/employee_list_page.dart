@@ -5,6 +5,7 @@ import 'package:kothayhisab/data/models/employee_model.dart';
 import 'package:kothayhisab/data/api/services/employee_service.dart';
 import 'package:kothayhisab/presentation/common_widgets/app_bar.dart';
 import 'package:kothayhisab/presentation/common_widgets/custom_bottom_app_bar.dart';
+import 'package:kothayhisab/presentation/common_widgets/toast_notification.dart';
 
 class EmployeeListPage extends StatefulWidget {
   final String shopId;
@@ -52,7 +53,7 @@ class _EmployeeListPageState extends State<EmployeeListPage> {
           // Sort employees so that owners appear first
           _sortEmployees();
         } else {
-          showErrorToast(result['message']);
+          ToastNotification.error('${result['message']}');
         }
       });
     } catch (e) {
@@ -62,7 +63,7 @@ class _EmployeeListPageState extends State<EmployeeListPage> {
       setState(() {
         isLoading = false;
       });
-      showErrorToast('Error: $e');
+      ToastNotification.error('Error: $e');
     }
   }
 
@@ -86,30 +87,6 @@ class _EmployeeListPageState extends State<EmployeeListPage> {
   String _getTranslatedRole(String role) {
     final lowerRole = role.toLowerCase();
     return _roleTranslations[lowerRole] ?? role;
-  }
-
-  void showErrorToast(String message) {
-    Fluttertoast.showToast(
-      msg: message,
-      toastLength: Toast.LENGTH_LONG,
-      gravity: ToastGravity.BOTTOM,
-      timeInSecForIosWeb: 3,
-      backgroundColor: Colors.red,
-      textColor: Colors.white,
-      fontSize: 16.0,
-    );
-  }
-
-  void showSuccessToast(String message) {
-    Fluttertoast.showToast(
-      msg: message,
-      toastLength: Toast.LENGTH_LONG,
-      gravity: ToastGravity.BOTTOM,
-      timeInSecForIosWeb: 3,
-      backgroundColor: Colors.green,
-      textColor: Colors.white,
-      fontSize: 16.0,
-    );
   }
 
   @override
@@ -307,7 +284,7 @@ class _EmployeeListPageState extends State<EmployeeListPage> {
     // Validate employeeId is not empty
     if (employeeId.trim().isEmpty) {
       print("Error: Employee ID is empty");
-      showErrorToast('Invalid employee ID');
+      ToastNotification.error('Invalid employee ID');
       return;
     }
 
@@ -341,13 +318,13 @@ class _EmployeeListPageState extends State<EmployeeListPage> {
         });
 
         if (result['success'] == true) {
-          showSuccessToast(
-            result['message'] ?? 'Employee removed successfully',
-          );
+          ToastNotification.success('কর্মচারীকে সফলভাবে বাতিল করা হয়েছে!');
           // Refresh the employee list
           await fetchEmployees();
         } else {
-          showErrorToast(result['message'] ?? 'Failed to remove employee');
+          ToastNotification.error(
+            result['message'] ?? 'Failed to remove employee',
+          );
         }
       } else {
         print("Widget not mounted after delete operation");
@@ -359,7 +336,7 @@ class _EmployeeListPageState extends State<EmployeeListPage> {
         setState(() {
           isLoading = false;
         });
-        showErrorToast('Error: $e');
+        ToastNotification.error('Error: $e');
       }
     }
   }

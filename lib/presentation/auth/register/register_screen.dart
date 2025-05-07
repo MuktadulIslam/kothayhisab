@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:kothayhisab/data/api/services/auth_service.dart';
 import 'package:kothayhisab/data/api/middleware/auth_middleware.dart';
 import 'package:kothayhisab/core/constants/app_routes.dart';
+import 'package:kothayhisab/presentation/common_widgets/toast_notification.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -20,7 +21,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _confirmPasswordController = TextEditingController();
 
   bool _isLoading = false;
-  String _errorMessage = '';
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
@@ -31,35 +31,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       AuthMiddleware.checkAlreadyLoggedIn(context);
     });
-
-    // Add listeners to clear error message when input changes
-    _nameController.addListener(_clearErrorOnChange);
-    _mobileNumberController.addListener(_clearErrorOnChange);
-    _passwordController.addListener(_clearErrorOnChange);
-    _confirmPasswordController.addListener(_clearErrorOnChange);
-  }
-
-  // Function to clear error message when user types in any field
-  void _clearErrorOnChange() {
-    if (_errorMessage.isNotEmpty) {
-      setState(() {
-        _errorMessage = '';
-      });
-    }
   }
 
   Future<void> _register() async {
     if (_formKey.currentState!.validate()) {
-      if (_passwordController.text != _confirmPasswordController.text) {
-        setState(() {
-          _errorMessage = 'পাসওয়ার্ড মিলছে না।';
-        });
-        return;
-      }
-
       setState(() {
         _isLoading = true;
-        _errorMessage = '';
       });
 
       final response = await AuthService.register(
@@ -79,14 +56,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
           Navigator.of(context).pushReplacementNamed(AppRoutes.loginPage);
         }
       } else if (response['status_code'] == 409) {
-        setState(() {
-          _errorMessage =
-              'এই নাম্বারের ব্যবহারকারী ইতোমধ্যেই রয়েছে। অন্য কোন নম্বর ব্যবহার করুন।';
-        });
+        ToastNotification.error(
+          'এই নাম্বারের ব্যবহারকারী ইতোমধ্যেই রয়েছে। অন্য কোন নম্বর ব্যবহার করুন।',
+        );
       } else {
-        setState(() {
-          _errorMessage = 'একটি অপ্রত্যাশিত ত্রুটি ঘটেছে!';
-        });
+        ToastNotification.error('একটি অপ্রত্যাশিত ত্রুটি ঘটেছে!');
       }
     }
   }
@@ -108,25 +82,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   // Logo and app name
                   Center(
                     child: Image.asset(
-                      'assets/images/logo.png',
-                      height: 60,
+                      'assets/images/logo.jpg',
+                      height: 80,
                       fit: BoxFit.contain,
                     ),
                   ),
-                  const SizedBox(height: 60),
+                  const SizedBox(height: 40),
 
-                  // Register Text
                   const Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
                       'রেজিস্টার করুন',
                       style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        color: Color.fromARGB(255, 28, 65, 130),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 15),
 
                   // Full Name Field
                   TextFormField(
@@ -144,7 +118,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 10),
 
                   // Mobile Number Field with 01 prefix validation
                   TextFormField(
@@ -171,7 +145,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 10),
 
                   // Password Field with visibility toggle - removed 8 char minimum
                   TextFormField(
@@ -204,7 +178,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 10),
 
                   // Confirm Password Field with visibility toggle
                   TextFormField(
@@ -239,16 +213,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     },
                   ),
 
-                  // Error Message
-                  if (_errorMessage.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: Text(
-                        _errorMessage,
-                        style: const TextStyle(color: Colors.red),
-                      ),
-                    ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
 
                   // Register Button
                   ElevatedButton(
@@ -281,11 +246,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ).pushReplacementNamed(AppRoutes.loginPage);
                         },
                         child: const Text(
-                          'লগইন',
+                          'লগইন করুন',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF005A8D),
+                            decoration: TextDecoration.underline,
                           ),
                         ),
                       ),
@@ -303,12 +269,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   void dispose() {
-    // Remove listeners before disposing controllers
-    _nameController.removeListener(_clearErrorOnChange);
-    _mobileNumberController.removeListener(_clearErrorOnChange);
-    _passwordController.removeListener(_clearErrorOnChange);
-    _confirmPasswordController.removeListener(_clearErrorOnChange);
-
     // Dispose of controllers
     _nameController.dispose();
     _mobileNumberController.dispose();
