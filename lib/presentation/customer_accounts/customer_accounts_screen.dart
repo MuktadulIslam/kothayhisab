@@ -1,6 +1,7 @@
 // lib/screens/due_accounts_screen.dart
 import 'package:flutter/material.dart';
 import 'package:get/get_connect/http/src/utils/utils.dart';
+import 'package:kothayhisab/core/utils/currency_formatter.dart';
 import 'package:kothayhisab/data/api/services/customer_account_services.dart';
 import 'package:kothayhisab/data/models/customer_model.dart';
 import 'package:kothayhisab/presentation/common_widgets/app_bar.dart';
@@ -20,6 +21,7 @@ class _CustomerAccountsScreenState extends State<CustomerAccountsScreen> {
   List<Customer> _customers = [];
   final TextEditingController _searchController = TextEditingController();
   final CustomerService _customerService = CustomerService();
+  final _useBengaliDigits = true;
 
   @override
   void initState() {
@@ -239,7 +241,7 @@ class _CustomerAccountsScreenState extends State<CustomerAccountsScreen> {
                             ),
                           ),
                           Text(
-                            '৳ ${customer.totalDue.toStringAsFixed(0)}',
+                            '৳ ${BdTakaFormatter.format(customer.totalDue, toBengaliDigits: _useBengaliDigits)}',
                             style: const TextStyle(
                               color: Colors.red,
                               fontWeight: FontWeight.bold,
@@ -302,7 +304,79 @@ class _CustomerAccountsScreenState extends State<CustomerAccountsScreen> {
                         // Add TextInputAction.done to show proper keyboard action
                         textInputAction: TextInputAction.done,
                       ),
+
+                      // To see bangla number in the input
+                      // TextFormField(
+                      //   controller: paymentController,
+                      //   keyboardType: TextInputType.number,
+                      //   decoration: InputDecoration(
+                      //     filled: true,
+                      //     fillColor: Colors.grey[100],
+                      //     labelText: 'পরিশোধের পরিমাণ',
+                      //     contentPadding: const EdgeInsets.symmetric(
+                      //       horizontal: 16,
+                      //       vertical: 16,
+                      //     ),
+                      //     border: InputBorder.none,
+                      //     prefixText: '৳ ',
+                      //     hintText: _useBengaliDigits ? '০' : '0',
+                      //   ),
+                      //   validator: (value) {
+                      //     if (value == null || value.isEmpty) {
+                      //       return 'পরিশোধের পরিমাণ দিন';
+                      //     }
+                      //     // Convert Bengali digits to English digits for validation
+                      //     String englishValue = BdTakaFormatter.toBengaliDigits(
+                      //       value,
+                      //     );
+                      //     // Check if it's a valid number
+                      //     if (double.tryParse(englishValue) == null) {
+                      //       return 'সঠিক সংখ্যা দিন';
+                      //     }
+                      //     return null;
+                      //   },
+                      //   onChanged: (value) {
+                      //     if (_useBengaliDigits && value.isNotEmpty) {
+                      //       // Save cursor position
+                      //       int cursorPos = paymentController.selection.start;
+
+                      //       // Convert to Bengali digits
+                      //       String bengaliText =
+                      //           BdTakaFormatter.toBengaliDigits(value);
+
+                      //       // Only update if the text actually changed
+                      //       if (bengaliText != value) {
+                      //         paymentController.text = bengaliText;
+
+                      //         // Restore cursor position, adjusted for any length change
+                      //         int newCursorPos =
+                      //             cursorPos +
+                      //             (bengaliText.length - value.length);
+                      //         if (newCursorPos >= 0 &&
+                      //             newCursorPos <= bengaliText.length) {
+                      //           paymentController
+                      //               .selection = TextSelection.fromPosition(
+                      //             TextPosition(offset: newCursorPos),
+                      //           );
+                      //         }
+                      //       }
+                      //     }
+                      //   },
+                      //   onFieldSubmitted: (value) {
+                      //     // Validate the form and submit if valid
+                      //     if (_formKey.currentState!.validate()) {
+                      //       // Convert Bengali digits to English digits for processing
+                      //       String englishValue =
+                      //           BdTakaFormatter.toBengaliDigits(value);
+                      //       int amount = int.tryParse(englishValue) ?? 0;
+                      //       Navigator.pop(context);
+                      //       _handleDuePayment(customer, amount);
+                      //     }
+                      //   },
+                      //   textInputAction: TextInputAction.done,
+                      // ),
                     ),
+
                     const SizedBox(height: 20),
 
                     // Confirm payment button - Modified to validate the form
@@ -487,7 +561,7 @@ class _CustomerAccountsScreenState extends State<CustomerAccountsScreen> {
                                             CrossAxisAlignment.end,
                                         children: [
                                           Text(
-                                            '৳ ${customer.totalDue.toStringAsFixed(0)}',
+                                            '৳ ${BdTakaFormatter.format(customer.totalDue, toBengaliDigits: _useBengaliDigits)}',
                                             style: const TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.bold,

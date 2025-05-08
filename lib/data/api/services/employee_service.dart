@@ -116,6 +116,7 @@ class EmployeeService {
           'success': true,
           'message': responseData['message'] ?? 'Employee added successfully',
           'data': responseData['data'],
+          'status_code': response.statusCode,
         };
       } else if (response.statusCode == 404) {
         return {

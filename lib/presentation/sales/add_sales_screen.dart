@@ -286,7 +286,6 @@ class _AddSalesScreenState extends State<AddSalesScreen> {
 
       if (result) {
         ToastNotification.success('বিক্রয় সফলভাবে সংরক্ষিত হয়েছে');
-        ToastNotification.error('কোন পণ্য যোগ করা হয়নি');
 
         // Reset the state
         setState(() {

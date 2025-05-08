@@ -27,7 +27,7 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
 
   // Define roles with their display names and actual values
   final List<Map<String, String>> _roles = [
-    {'display': 'নতুন কর্মচারী', 'value': 'Employee'},
+    {'display': 'নতুন সহকারী', 'value': 'Employee'},
     {'display': 'নতুন মালিক', 'value': 'Owner'},
   ];
 
@@ -72,44 +72,15 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
       });
 
       if (result['success']) {
-        ToastNotification.success('নতুন কর্মচারী যোগ করা সফল হয়েছে!');
-
-        // Safely call the callback
-        if (!_isDisposed && mounted && widget.onEmployeeAdded != null) {
-          // Use Future.microtask to avoid calling setState during build
-          Future.microtask(() {
-            try {
-              widget.onEmployeeAdded!();
-            } catch (e) {
-              print("Error in callback: $e");
-            }
-          });
-        }
-
-        // Only pop if still mounted
-        if (mounted) {
-          // Use a slight delay to ensure callback has completed
-          Future.delayed(Duration.zero, () {
-            if (mounted) {
-              Navigator.of(context).pop();
-            }
-          });
-        }
+        ToastNotification.success('নতুন সহকারী যোগ করা সফল হয়েছে!');
+        Navigator.of(context).pop();
+      } else if (result['status_code'] == 404) {
+        ToastNotification.error('এই নাম্বারে কোনো বাবহারকারি পাওয়া যাইনি!');
       } else {
-        if (!_isDisposed) {
-          ToastNotification.error(
-            'কর্মচারী যোগ করতে সমস্যা হয়েছে! ${result['message']}',
-          );
-        }
+        ToastNotification.error('সহকারী যোগ করতে সমস্যা হয়েছে!');
       }
     } catch (e) {
-      print("Error adding employee: $e");
-      if (!_isDisposed) {
-        setState(() {
-          _isLoading = false;
-        });
-        ToastNotification.error('কর্মচারী যোগ করতে সমস্যা হয়েছে!');
-      }
+      ToastNotification.error('সহকারী যোগ করতে সমস্যা হয়েছে!');
     }
   }
 
@@ -122,7 +93,7 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
         return false;
       },
       child: Scaffold(
-        appBar: CustomAppBar('নতুন কর্মচারীর যোগ'),
+        appBar: CustomAppBar('নতুন সহকারী যোগ'),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Form(
@@ -131,7 +102,7 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'কর্মচারীর মোবাইল নম্বরঃ',
+                  'সহকারীর মোবাইল নম্বরঃ',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 const SizedBox(height: 8),
@@ -156,7 +127,7 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
                 ),
                 const SizedBox(height: 20),
                 const Text(
-                  'কর্মচারীর দায়িত্বঃ',
+                  'সহকারীর দায়িত্বঃ',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 const SizedBox(height: 8),

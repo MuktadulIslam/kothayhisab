@@ -22,18 +22,8 @@ class InventoryService {
     return 0.0;
   }
 
-  // Helper method to convert API response item to InventoryItem
-  InventoryItem _convertApiItemToInventoryItem(Map<String, dynamic> apiItem) {
-    return InventoryItem(
-      name: apiItem['product_name'] ?? '',
-      price: _convertToDouble(apiItem['price']),
-      quantity: apiItem['quantity'] ?? 0,
-      quantityDescription: apiItem['quantity_description'] ?? '',
-    );
-  }
-
   // Get all inventory items
-  Future<List<InventoryItem>> getInventoryItems(String shopId) async {
+  Future<GetInventoryResponse> getInventoryItems(String shopId) async {
     try {
       // Get token from auth service
       final token = await AuthService.getToken();
@@ -52,17 +42,12 @@ class InventoryService {
 
       if (response.statusCode == 200) {
         try {
-          final List<dynamic> responseData = jsonDecode(responseBody);
-          // Directly map the list to InventoryItem objects
-          List<InventoryItem> items =
-              responseData
-                  .map((item) => _convertApiItemToInventoryItem(item))
-                  .toList();
+          final Map<String, dynamic> responseData = jsonDecode(responseBody);
+          // Use the fromJson factory constructor to create a GetInventoryResponse object
+          final inventoryResponse = GetInventoryResponse.fromJson(responseData);
+          print(inventoryResponse);
 
-          // // Sort items by entry date (newest first)
-          // items.sort((a, b) => b.entryDate.compareTo(a.entryDate));
-
-          return items;
+          return inventoryResponse;
         } catch (e) {
           print('Error parsing JSON response: $e');
           throw Exception('Error parsing response: $e');

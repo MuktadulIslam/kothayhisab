@@ -22,7 +22,7 @@ class _EmployeeListPageState extends State<EmployeeListPage> {
 
   // Role translation map
   final Map<String, String> _roleTranslations = {
-    'employee': 'কর্মচারী',
+    'employee': 'সহকারী',
     'owner': 'মালিক',
   };
 
@@ -92,7 +92,7 @@ class _EmployeeListPageState extends State<EmployeeListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar('কর্মচারী'), // "Employee" in Bengali
+      appBar: CustomAppBar('সহকারীগণ'), // "Employee" in Bengali
       body: Column(
         children: [
           Container(
@@ -119,7 +119,7 @@ class _EmployeeListPageState extends State<EmployeeListPage> {
                   Icon(Icons.add, color: Colors.white),
                   SizedBox(width: 8),
                   Text(
-                    'কর্মচারী যোগ করুন',
+                    'সহকারী যোগ করুন',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -137,7 +137,7 @@ class _EmployeeListPageState extends State<EmployeeListPage> {
                     : employees.isEmpty
                     ? const Center(
                       child: Text(
-                        'কোনো কর্মচারী পাওয়া যায়নি',
+                        'কোনো সহকারী পাওয়া যায়নি',
                         style: TextStyle(fontSize: 16, color: Colors.grey),
                       ),
                     )
@@ -318,7 +318,7 @@ class _EmployeeListPageState extends State<EmployeeListPage> {
         });
 
         if (result['success'] == true) {
-          ToastNotification.success('কর্মচারীকে সফলভাবে বাতিল করা হয়েছে!');
+          ToastNotification.success('সহকারী সফলভাবে বাতিল করা হয়েছে!');
           // Refresh the employee list
           await fetchEmployees();
         } else {

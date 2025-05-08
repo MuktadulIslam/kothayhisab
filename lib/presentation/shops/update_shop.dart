@@ -151,9 +151,9 @@ class _ShopUpdateScreenState extends State<ShopUpdateScreen> {
         _showSuccessToast('দোকান আপডেট সফল হয়েছে!');
 
         // Navigate back after a short delay to ensure toast is visible
-        Future.delayed(Duration(milliseconds: 1500), () {
+        Future.delayed(Duration(milliseconds: 500), () {
           if (mounted) {
-            Navigator.pop(context, 'updated');
+            Navigator.pushReplacementNamed(context, '/');
           }
         });
       } else {

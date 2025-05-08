@@ -84,24 +84,28 @@ class BdTakaFormatter {
         : '$formattedRemainingDigits,$lastThreeDigits';
   }
 
-  /// Converts English/Western digits to Bengali digits
-  static String _convertToBengaliDigits(String input) {
-    StringBuffer result = StringBuffer();
+  static _convertToBengaliDigits(String text) {
+    const englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+    const bengaliDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
 
-    for (int i = 0; i < input.length; i++) {
-      String char = input[i];
-      // Check if the character is a digit (0-9)
-      if (char.codeUnitAt(0) >= 48 && char.codeUnitAt(0) <= 57) {
-        // Convert to Bengali digit
-        int digitValue = int.parse(char);
-        result.write(_bengaliDigits[digitValue]);
-      } else {
-        // Keep non-digit characters as is (like commas, decimal points)
-        result.write(char);
-      }
+    for (int i = 0; i < englishDigits.length; i++) {
+      text = text.replaceAll(englishDigits[i], bengaliDigits[i]);
     }
 
-    return result.toString();
+    return text;
+  }
+
+  // Add this utility method to convert Bengali digits to English digits
+  // This is needed for processing the input as numbers
+  static _convertToEnglishDigits(String text) {
+    const englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+    const bengaliDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+
+    for (int i = 0; i < bengaliDigits.length; i++) {
+      text = text.replaceAll(bengaliDigits[i], englishDigits[i]);
+    }
+
+    return text;
   }
 
   /// Converts an English/Western digit string to Bengali digits
@@ -111,7 +115,11 @@ class BdTakaFormatter {
 
   /// Converts a number to Bengali digits
   static String numberToBengaliDigits(num number) {
-    return _convertToBengaliDigits(number.toString());
+    if (number == number.toInt()) {
+      return _convertToBengaliDigits(number.toInt().toString());
+    } else {
+      return _convertToBengaliDigits(number.toString());
+    }
   }
 
   /// Formats a number as Bangladesh Taka currency with symbol

@@ -33,7 +33,7 @@ class SalesService {
   }
 
   // Get all sales items
-  Future<List<SalesItem>> getSalesItems(String shopId) async {
+  Future<GetSalesResponse> getSalesItems(String shopId) async {
     try {
       // Get token from auth service
       final token = await AuthService.getToken();
@@ -52,20 +52,15 @@ class SalesService {
 
       if (response.statusCode == 200) {
         try {
-          final List<dynamic> responseData = jsonDecode(responseBody);
-          // Directly map the list to SalesItem objects
-          List<SalesItem> items =
-              responseData
-                  .map((item) => _convertApiItemToSalesItem(item))
-                  .toList();
+          final Map<String, dynamic> responseData = jsonDecode(responseBody);
+          // Use the fromJson factory constructor to create a GetSalesResponse object
+          final salesResponse = GetSalesResponse.fromJson(responseData);
+          print(salesResponse);
 
-          // Sort items by entry date (newest first)
-          // items.sort((a, b) => b.entryDate.compareTo(a.entryDate));
-
-          return items;
+          return salesResponse;
         } catch (e) {
-          print('Error parsing JSON response in sales: $e');
-          throw Exception('Error parsing response in sales: $e');
+          print('Error parsing JSON response: $e');
+          throw Exception('Error parsing response: $e');
         }
       } else if (response.statusCode == 401 || response.statusCode == 403) {
         throw Exception('Authentication error. Please log in again.');

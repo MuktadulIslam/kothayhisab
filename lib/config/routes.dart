@@ -95,12 +95,12 @@ final Map<String, WidgetBuilder> appRoutes = {
     return AddInventoryScreen(shopId: shopId);
   },
 
-  // '/shop-details/see-inventory': (context) {
-  //   final args =
-  //       ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
-  //   final shopId = args?['shopId'] as String? ?? '';
-  //   return InventoryPage(shopId: shopId);
-  // },
+  '/shop-details/see-inventory': (context) {
+    final args =
+        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+    final shopId = args?['shopId'] as String? ?? '';
+    return InventoryPage(shopId: shopId);
+  },
 
   // Sales routes with shopId
   '/shop-details/add_sales': (context) {
@@ -110,19 +110,19 @@ final Map<String, WidgetBuilder> appRoutes = {
     return AddSalesScreen(shopId: shopId);
   },
 
-  // '/shop-details/see_sales': (context) {
-  //   final args =
-  //       ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
-  //   final shopId = args?['shopId'] as String? ?? '';
-  //   return SalesPage(shopId: shopId);
-  // },
-  '/shop-details/see_dues': (context) {
+  '/shop-details/see_sales': (context) {
     final args =
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
     final shopId = args?['shopId'] as String? ?? '';
-    return DuePage(shopId: shopId);
+    return SalesPage(shopId: shopId);
   },
 
+  // '/shop-details/see_dues': (context) {
+  //   final args =
+  //       ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+  //   final shopId = args?['shopId'] as String? ?? '';
+  //   return DuePage(shopId: shopId);
+  // },
   '/shop-details/add-customer-accounts': (context) {
     final args =
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;

@@ -154,7 +154,7 @@ class StoreCard extends StatelessWidget {
                             Icon(Icons.people, color: Colors.white, size: 14),
                             SizedBox(width: 4),
                             Text(
-                              'কর্মচারী', // "Employee" in Bengali
+                              'সহকারী', // "Employee" in Bengali
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 12,
